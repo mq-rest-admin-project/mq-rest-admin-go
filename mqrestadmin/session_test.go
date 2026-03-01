@@ -1036,9 +1036,12 @@ func TestExtractCommandResponseObjects_NonListCommandResponse(t *testing.T) {
 	payload := map[string]any{
 		"commandResponse": "not a list",
 	}
-	result := extractCommandResponseObjects(payload)
+	result, err := extractCommandResponseObjects(payload)
+	if err == nil {
+		t.Fatal("expected error for non-list commandResponse")
+	}
 	if result != nil {
-		t.Errorf("expected nil for non-list commandResponse, got %v", result)
+		t.Errorf("expected nil result, got %v", result)
 	}
 }
 
@@ -1046,9 +1049,12 @@ func TestExtractCommandResponseObjects_NonMapItem(t *testing.T) {
 	payload := map[string]any{
 		"commandResponse": []any{"not a map"},
 	}
-	result := extractCommandResponseObjects(payload)
-	if len(result) != 0 {
-		t.Errorf("expected 0 results for non-map item, got %d", len(result))
+	result, err := extractCommandResponseObjects(payload)
+	if err == nil {
+		t.Fatal("expected error for non-map commandResponse item")
+	}
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
 	}
 }
 
@@ -1058,7 +1064,10 @@ func TestExtractCommandResponseObjects_MissingParameters(t *testing.T) {
 			map[string]any{"completionCode": float64(0)},
 		},
 	}
-	result := extractCommandResponseObjects(payload)
+	result, err := extractCommandResponseObjects(payload)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	if len(result) != 0 {
 		t.Errorf("expected 0 results when parameters missing, got %d", len(result))
 	}
@@ -1073,9 +1082,54 @@ func TestExtractCommandResponseObjects_NonMapParameters(t *testing.T) {
 			},
 		},
 	}
-	result := extractCommandResponseObjects(payload)
+	result, err := extractCommandResponseObjects(payload)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	if len(result) != 0 {
 		t.Errorf("expected 0 results for non-map parameters, got %d", len(result))
+	}
+}
+
+func TestMqscCommand_NonListCommandResponse_ReturnsResponseError(t *testing.T) {
+	transport := newMockTransport()
+	transport.addResponse(200, map[string]any{
+		"overallCompletionCode": float64(0),
+		"overallReasonCode":     float64(0),
+		"commandResponse":       "not a list",
+	}, nil)
+	session := newTestSession(transport)
+
+	_, err := session.mqscCommand(context.Background(), "DISPLAY", "QLOCAL", nil,
+		nil, nil, nil, true)
+	if err == nil {
+		t.Fatal("expected error for non-list commandResponse")
+	}
+
+	var respErr *ResponseError
+	if !errors.As(err, &respErr) {
+		t.Fatalf("expected ResponseError, got %T: %v", err, err)
+	}
+}
+
+func TestMqscCommand_NonMapCommandResponseItem_ReturnsResponseError(t *testing.T) {
+	transport := newMockTransport()
+	transport.addResponse(200, map[string]any{
+		"overallCompletionCode": float64(0),
+		"overallReasonCode":     float64(0),
+		"commandResponse":       []any{"not a map"},
+	}, nil)
+	session := newTestSession(transport)
+
+	_, err := session.mqscCommand(context.Background(), "DISPLAY", "QLOCAL", nil,
+		nil, nil, nil, true)
+	if err == nil {
+		t.Fatal("expected error for non-map commandResponse item")
+	}
+
+	var respErr *ResponseError
+	if !errors.As(err, &respErr) {
+		t.Fatalf("expected ResponseError, got %T: %v", err, err)
 	}
 }
 

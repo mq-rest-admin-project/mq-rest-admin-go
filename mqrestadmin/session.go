@@ -338,7 +338,11 @@ func (session *Session) executeAndParseResponse(ctx context.Context, payload map
 		return nil, err
 	}
 
-	return extractCommandResponseObjects(responsePayload), nil
+	objects, err := extractCommandResponseObjects(responsePayload)
+	if err != nil {
+		return nil, &ResponseError{ResponseText: response.Body, StatusCode: response.StatusCode}
+	}
+	return objects, nil
 }
 
 // applyResponseMapping translates response attribute names from MQSC names
@@ -534,22 +538,22 @@ func isNonZeroNumber(value any) bool {
 	}
 }
 
-func extractCommandResponseObjects(payload map[string]any) []map[string]any {
+func extractCommandResponseObjects(payload map[string]any) ([]map[string]any, error) {
 	commandResponse, exists := payload["commandResponse"]
 	if !exists {
-		return nil
+		return nil, nil
 	}
 
 	items, isList := commandResponse.([]any)
 	if !isList {
-		return nil
+		return nil, fmt.Errorf("response commandResponse was not a list")
 	}
 
 	var result []map[string]any
 	for _, item := range items {
 		itemMap, isMap := item.(map[string]any)
 		if !isMap {
-			continue
+			return nil, fmt.Errorf("response commandResponse item was not an object")
 		}
 
 		params, hasParams := itemMap["parameters"]
@@ -573,7 +577,7 @@ func extractCommandResponseObjects(payload map[string]any) []map[string]any {
 		result = append(result, paramsMap)
 	}
 
-	return result
+	return result, nil
 }
 
 // flattenNestedObjects merges parent-level fields into each nested object.
