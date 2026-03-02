@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] - 2026-03-02
+
+### Bug fixes
+
+- correct relative links to mapping-pipeline in api/ensure and api/sync (#209)
+- LTPA cookie extraction uses prefix matching for suffixed cookie names (#224)
+- only swallow CommandError in queryStatus during polling (#228)
+- add structural validation for commandResponse (#233)
+
+### CI
+
+- remove SonarCloud and Code Climate workflows (#189)
+- implement three-tier CI architecture (#191)
+- add concurrency group to ci-push workflow (#234)
+
+### Documentation
+
+- replace stale script references with st-* commands (#188)
+- fix index page mismatches and restructure nav for LHS sidebar (#205)
+- merge ensure and sync documentation into single pages (#207)
+- add cross-repo documentation links to docs site (#226)
+- document local MQ environment scripts for AI agents (#235)
+
+### Features
+
+- port 6 runnable examples with integration tests (#216)
+- auto-generate all MQSC command methods from mapping-data.json (#221)
+- add SyncConfig construction validation (#232)
+
+### Refactoring
+
+- add typecheck.sh and remove go vet from lint.sh (#201)
+- rename val to valueKey and standardize found to exists (#214)
+
+### Testing
+
+- include examples in code coverage metrics (#218)
+
 ## [1.2.0] - 2026-02-24
 
 ### Bug fixes
