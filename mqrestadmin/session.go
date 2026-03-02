@@ -34,8 +34,9 @@ type Session struct {
 	mappingStrict bool
 	csrfToken     *string
 	mapper        *attributeMapper
-	ltpaToken     string
-	clock         clock
+	ltpaCookieName string
+	ltpaToken      string
+	clock          clock
 
 	// LastHTTPStatus is the HTTP status code from the most recent command.
 	LastHTTPStatus int
@@ -337,7 +338,11 @@ func (session *Session) executeAndParseResponse(ctx context.Context, payload map
 		return nil, err
 	}
 
-	return extractCommandResponseObjects(responsePayload), nil
+	objects, err := extractCommandResponseObjects(responsePayload)
+	if err != nil {
+		return nil, &ResponseError{ResponseText: response.Body, StatusCode: response.StatusCode}
+	}
+	return objects, nil
 }
 
 // applyResponseMapping translates response attribute names from MQSC names
@@ -347,7 +352,7 @@ func (session *Session) applyResponseMapping(mappingQualifier string, objects []
 		return objects, nil
 	}
 
-	mapped, issues := session.mapper.mapResponseList(mappingQualifier, objects, session.mappingStrict)
+	mapped, issues := session.mapper.mapResponseList(mappingQualifier, objects)
 	if session.mappingStrict && len(issues) > 0 {
 		return nil, &MappingError{Issues: issues}
 	}
@@ -419,7 +424,7 @@ func (session *Session) mapResponseParameterNames(qualifier string, params []str
 
 	mapped := make([]string, len(params))
 	for idx, param := range params {
-		if mqscName, found := qualifierData.RequestKeyMap[param]; found {
+		if mqscName, exists := qualifierData.RequestKeyMap[param]; exists {
 			mapped[idx] = mqscName
 		} else {
 			mapped[idx] = param
@@ -456,16 +461,17 @@ func (session *Session) performLTPALogin(auth LTPAAuth) error {
 		return &AuthError{URL: loginURL, StatusCode: response.StatusCode}
 	}
 
-	token := extractLTPAToken(response.Headers)
+	cookieName, token := extractLTPAToken(response.Headers)
 	if token == "" {
 		return &AuthError{URL: loginURL, StatusCode: response.StatusCode}
 	}
 
+	session.ltpaCookieName = cookieName
 	session.ltpaToken = token
 	return nil
 }
 
-func extractLTPAToken(headers map[string]string) string {
+func extractLTPAToken(headers map[string]string) (cookieName, cookieValue string) {
 	for key, value := range headers {
 		// coverage-ignore -- Go 1.26 intermittently counts this branch differently
 		if !strings.EqualFold(key, "Set-Cookie") {
@@ -473,12 +479,15 @@ func extractLTPAToken(headers map[string]string) string {
 		}
 		for _, part := range strings.Split(value, ";") {
 			trimmed := strings.TrimSpace(part)
-			if strings.HasPrefix(trimmed, ltpaCookieName+"=") {
-				return strings.TrimPrefix(trimmed, ltpaCookieName+"=")
+			if strings.HasPrefix(trimmed, ltpaCookieName) {
+				eqIndex := strings.Index(trimmed, "=")
+				if eqIndex > 0 {
+					return trimmed[:eqIndex], trimmed[eqIndex+1:]
+				}
 			}
 		}
 	}
-	return ""
+	return "", ""
 }
 
 func parseResponsePayload(body string) (map[string]any, error) {
@@ -529,22 +538,22 @@ func isNonZeroNumber(value any) bool {
 	}
 }
 
-func extractCommandResponseObjects(payload map[string]any) []map[string]any {
+func extractCommandResponseObjects(payload map[string]any) ([]map[string]any, error) {
 	commandResponse, exists := payload["commandResponse"]
 	if !exists {
-		return nil
+		return nil, nil
 	}
 
 	items, isList := commandResponse.([]any)
 	if !isList {
-		return nil
+		return nil, fmt.Errorf("response commandResponse was not a list")
 	}
 
 	var result []map[string]any
 	for _, item := range items {
 		itemMap, isMap := item.(map[string]any)
 		if !isMap {
-			continue
+			return nil, fmt.Errorf("response commandResponse item was not an object")
 		}
 
 		params, hasParams := itemMap["parameters"]
@@ -568,7 +577,7 @@ func extractCommandResponseObjects(payload map[string]any) []map[string]any {
 		result = append(result, paramsMap)
 	}
 
-	return result
+	return result, nil
 }
 
 // flattenNestedObjects merges parent-level fields into each nested object.

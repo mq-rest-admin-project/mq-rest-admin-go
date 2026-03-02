@@ -64,12 +64,59 @@ This is a Go port of `pymqrest`, providing a Go wrapper for the IBM MQ administr
 - **Standard tooling**: `cd ../standard-tooling && uv sync && export PATH="../standard-tooling/.venv/bin:../standard-tooling/scripts/bin:$PATH"`
 - **Git hooks**: `git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks` (required before committing)
 
+### Three-Tier CI Model
+
+Testing is split across three tiers with increasing scope and cost:
+
+**Tier 1 — Local pre-commit (seconds):** Fast smoke tests in a single
+container. Run before every commit. No MQ, no matrix.
+
+```bash
+./scripts/dev/test.sh        # go vet + tests in dev-go:1.26
+./scripts/dev/lint.sh        # go vet + golangci-lint + gocyclo in dev-go:1.26
+./scripts/dev/audit.sh       # govulncheck + license check in dev-go:1.26
+```
+
+**Tier 2 — Push CI (~3-5 min):** Triggers automatically on push to
+`feature/**`, `bugfix/**`, `hotfix/**`, `chore/**`. Single Go version
+(1.26), includes integration tests, no security scanners or release gates.
+Workflow: `.github/workflows/ci-push.yml` (calls `ci.yml`).
+
+**Tier 3 — PR CI (~8-10 min):** Triggers on `pull_request`. Full Go
+matrix (1.25, 1.26), all integration tests, security scanners (CodeQL,
+Trivy, Semgrep), standards compliance, and release gates. Workflow:
+`.github/workflows/ci.yml`.
+
 ### Build
 
 ```bash
 go build ./...          # Compile all packages
 go vet ./...            # Static analysis
 ```
+
+### Docker-First Testing
+
+All tests can run inside containers — Docker is the only host prerequisite.
+The `dev-go:1.26` image is built from `../standard-tooling/docker/go/`.
+
+```bash
+# Build the dev image (one-time, from standard-tooling)
+cd ../standard-tooling && docker/build.sh
+
+# Run tests in container
+./scripts/dev/test.sh
+
+# Run lint checks in container
+./scripts/dev/lint.sh
+
+# Run security audit in container
+./scripts/dev/audit.sh
+```
+
+Environment overrides:
+
+- `DOCKER_DEV_IMAGE` — override the container image (default: `dev-go:1.26`)
+- `DOCKER_TEST_CMD` — override the test command
 
 ### Validation
 
@@ -99,8 +146,59 @@ go tool cover -html=coverage.out                # View coverage in browser
   lines (e.g., `json.Marshal` on `map[string]any`, embedded JSON parse errors) are
   annotated with `// coverage-ignore -- <reason>` on the **preceding line** (the
   `{` line) and excluded from measurement.
-- **Integration tests**: Require `MQ_REST_ADMIN_GO_RUN_INTEGRATION=1` and a running
+- **Integration tests**: Require `MQ_REST_ADMIN_RUN_INTEGRATION=1` and a running
   MQ container. CI uses the `wphillipmoore/mq-rest-admin-dev-environment` action.
+  Wrapper scripts in `scripts/dev/mq_*.sh` manage the MQ lifecycle with
+  `COMPOSE_PROJECT_NAME=mqrest-go` and Go-specific port allocation
+  (REST: 9463/9464, MQ: 1434/1435).
+
+### Local MQ Container
+
+The MQ development environment is owned by the
+[mq-rest-admin-dev-environment](https://github.com/wphillipmoore/mq-rest-admin-dev-environment)
+repository. Clone it as a sibling directory before running lifecycle
+scripts:
+
+```bash
+# Prerequisite (one-time)
+git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git ../mq-rest-admin-dev-environment
+
+# Start the containerized MQ queue managers
+./scripts/dev/mq_start.sh
+
+# Seed deterministic test objects (DEV.* prefix)
+./scripts/dev/mq_seed.sh
+
+# Verify REST-based MQSC responses
+./scripts/dev/mq_verify.sh
+
+# Stop the queue managers
+./scripts/dev/mq_stop.sh
+
+# Reset to clean state (removes data volumes)
+./scripts/dev/mq_reset.sh
+```
+
+The lifecycle scripts are thin wrappers that delegate to
+`../mq-rest-admin-dev-environment`. Override the path with `MQ_DEV_ENV_PATH`.
+
+Integration tests are gated by the `MQ_REST_ADMIN_RUN_INTEGRATION`
+environment variable. When unset, integration tests are skipped. For local
+runs:
+
+```bash
+./scripts/dev/mq_start.sh
+./scripts/dev/mq_seed.sh
+export MQ_REST_ADMIN_RUN_INTEGRATION=true
+go test -race -count=1 -tags=integration ./...
+```
+
+Container details:
+- Queue managers: `QM1` and `QM2`
+- QM1 ports: `1434` (MQ listener), `9463` (REST API)
+- QM2 ports: `1435` (MQ listener), `9464` (REST API)
+- Admin credentials: `mqadmin` / `mqadmin`
+- Object prefix: `DEV.*`
 
 ## Architecture
 
