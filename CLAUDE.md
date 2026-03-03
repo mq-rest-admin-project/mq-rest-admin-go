@@ -2,41 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Auto-memory policy
-
-**Do NOT use MEMORY.md.** Claude Code's auto-memory feature stores behavioral
-rules outside of version control, making them invisible to code review,
-inconsistent across repos, and unreliable across sessions. All behavioral rules,
-conventions, and workflow instructions belong in managed, version-controlled
-documentation (CLAUDE.md, AGENTS.md, skills, or docs/).
-
-If you identify a pattern, convention, or rule worth preserving:
-
-1. **Stop.** Do not write to MEMORY.md.
-2. **Discuss with the user** what you want to capture and why.
-3. **Together, decide** the correct managed location (CLAUDE.md, a skill file,
-   standards docs, or a new issue to track the gap).
-
-This policy exists because MEMORY.md is per-directory and per-machine — it
-creates divergent agent behavior across the multi-repo environment this project
-operates in. Consistency requires all guidance to live in shared, reviewable
-documentation.
-
-## Shell command policy
-
-**Do NOT use heredocs** (`<<EOF` / `<<'EOF'`) for multi-line arguments to CLI
-tools such as `gh`, `git commit`, or `curl`. Heredocs routinely fail due to
-shell escaping issues with apostrophes, backticks, and special characters.
-Always write multi-line content to a temporary file and pass it via `--body-file`
-or `--file` instead.
-
-## Documentation Strategy
-
-This repository uses two complementary approaches for AI agent guidance:
-
-- **AGENTS.md**: Generic AI agent instructions using include directives to force documentation indexing. Contains canonical standards references, shared skills loading, and user override support.
-- **CLAUDE.md** (this file): Claude Code-specific guidance with prescriptive commands, architecture details, and development workflows optimized for `/init`.
-
 <!-- include: docs/standards-and-conventions.md -->
 <!-- include: docs/repository-standards.md -->
 
@@ -271,56 +236,7 @@ pre-configured responses. Helper constructors:
 - `newTestSessionWithClock(transport, clock)` — mock clock for sync/polling tests
 - `generateSelfSignedCert(t)` — creates test TLS certificates (in `testhelpers_test.go`)
 
-## Branching and PR Workflow
-
-- **Protected branches**: `main`, `develop`, `release/*` — no direct commits (enforced by pre-commit hook)
-- **Branch naming**: `feature/*`, `bugfix/*`, or `hotfix/*` only
-- **Feature/bugfix PRs** target `develop` with squash merge: `gh pr merge --auto --squash --delete-branch`
-- **Release PRs** target `main` with regular merge: `gh pr merge --auto --merge --delete-branch`
-- **Pre-flight**: Always check branch with `git status -sb` before modifying files. If on `develop`, create a `feature/*` branch first.
-- **Go version gate**: PRs to `develop` must have a `go.mod` version different from `main`
-
-## Commit and PR Scripts
-
-**NEVER use raw `git commit`** — always use `st-commit`.
-**NEVER use raw `gh pr create`** — always use `st-submit-pr`.
-
-### Committing
-
-```bash
-st-commit --type feat --scope mapping --message "add reverse lookup" --agent claude
-st-commit --type fix --message "correct off-by-one in polling" --agent claude
-st-commit --type docs --message "update README examples" --body "Expanded usage section" --agent claude
-```
-
-- `--type` (required): `feat|fix|docs|style|refactor|test|chore|ci|build`
-- `--message` (required): commit description
-- `--agent` (required): `claude` or `codex` — resolves the correct `Co-Authored-By` identity
-- `--scope` (optional): conventional commit scope
-- `--body` (optional): detailed commit body
-
-### Submitting PRs
-
-```bash
-st-submit-pr --issue 42 --summary "Add reverse lookup for attribute mapping"
-st-submit-pr --issue 42 --linkage Ref --summary "Update docs" --docs-only
-st-submit-pr --issue 42 --summary "Fix polling bug" --notes "Tested with MQ 9.4"
-```
-
-- `--issue` (required): GitHub issue number (just the number)
-- `--summary` (required): one-line PR summary
-- `--linkage` (optional, default: `Fixes`): `Fixes|Closes|Resolves|Ref`
-- `--title` (optional): PR title (default: most recent commit subject)
-- `--notes` (optional): additional notes
-- `--docs-only` (optional): applies docs-only testing exception
-- `--dry-run` (optional): print generated PR without executing
-
 ## Key References
-
-**Canonical Standards**: <https://github.com/wphillipmoore/standards-and-conventions>
-
-- Local path (preferred): `../standards-and-conventions`
-- Load all skills from: `<standards-repo-path>/skills/**/SKILL.md`
 
 **Reference implementation**: `../pymqrest` (Python version)
 
@@ -330,5 +246,3 @@ st-submit-pr --issue 42 --summary "Fix polling bug" --notes "Tested with MQ 9.4"
 
 - IBM MQ 9.4 administrative REST API
 - MQSC command reference
-
-**User Overrides**: `~/AGENTS.md` (optional, applied if present and readable)
