@@ -9,90 +9,37 @@ permissions:
   contents: write
   pull-requests: write
 
-concurrency:
-  group: publish
-  cancel-in-progress: false
-
 jobs:
   publish:
-    name: "publish: release"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@develop
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      ecosystem: go
+      version-command: >-
+        grep -oP 'Version\s*=\s*"\K[^"]+' mqrestadmin/version.go
+      build-command: >-
+        go build ./... && go vet ./... && go test -race -count=1 ./...
+      sbom-output-file: "dist/mqrestadmin-$VERSION.cdx.json"
+      release-title: mqrestadmin
+      release-notes: |
+        ## Installation
 
-      - name: Extract version
-        id: version
-        run: |
-          version=$(grep -oP 'Version\s*=\s*"\K[^"]+' mqrestadmin/version.go)
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+        ```bash
+        go get github.com/wphillipmoore/mq-rest-admin-go@v$VERSION
+        ```
 
-      - name: Check if tag already exists
-        id: tag_check
-        run: |
-          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
+        ## Links
 
-      - name: Set up Go
-        if: steps.tag_check.outputs.exists == 'false'
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-
-      - name: Validate before tagging
-        if: steps.tag_check.outputs.exists == 'false'
-        run: |
-          go build ./...
-          go vet ./...
-          go test -race -count=1 ./...
-
-      - name: Generate SBOM
-        if: steps.tag_check.outputs.exists == 'false'
-        uses: wphillipmoore/standard-actions/actions/security/trivy@develop
-        with:
-          scan-type: sbom
-          output-file: mqrestadmin-${{ steps.version.outputs.version }}.cdx.json
-
-      - name: Tag and release
-        if: steps.tag_check.outputs.exists == 'false'
-        uses: wphillipmoore/standard-actions/actions/publish/tag-and-release@develop
-        with:
-          version: ${{ steps.version.outputs.version }}
-          release-title: mqrestadmin
-          release-notes: |
-            ## Installation
-
-            ```bash
-            go get github.com/wphillipmoore/mq-rest-admin-go@v${{ steps.version.outputs.version }}
-            ```
-
-            ## Links
-
-            - [Go Package](https://pkg.go.dev/github.com/wphillipmoore/mq-rest-admin-go@v${{ steps.version.outputs.version }})
-            - [Documentation](https://wphillipmoore.github.io/mq-rest-admin-go/)
-          release-artifacts: mqrestadmin-${{ steps.version.outputs.version }}.cdx.json
-
-      - name: Generate app token for bump PR
-        if: steps.tag_check.outputs.exists == 'false'
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - name: Version bump PR
-        if: steps.tag_check.outputs.exists == 'false'
-        uses: wphillipmoore/standard-actions/actions/publish/version-bump-pr@develop
-        with:
-          current-version: ${{ steps.version.outputs.version }}
-          version-file: mqrestadmin/version.go
-          version-regex: '(Version\s*=\s*\").*(\"\s*)'
-          version-replacement: '\g<1>{version}\2'
-          develop-version-command: grep -oP 'Version\s*=\s*"\K[^"]+'
-          app-token: ${{ steps.app-token.outputs.token }}
+        - [Go Package](https://pkg.go.dev/github.com/wphillipmoore/mq-rest-admin-go@v$VERSION)
+        - [Documentation](https://wphillipmoore.github.io/mq-rest-admin-go/)
+      release-artifacts: "dist/*"
+      version-file: mqrestadmin/version.go
+      version-regex: '(Version\s*=\s*\").*(\"\s*)'
+      version-replacement: '\g<1>{version}\2'
+      develop-version-command: >-
+        grep -oP 'Version\s*=\s*"\K[^"]+'
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
