@@ -134,9 +134,6 @@ jobs:
       - name: Run tests with coverage
         run: go test -race -count=1 -coverprofile=coverage.out ./...
 
-      - name: Install go-test-coverage (until baked into dev-go image)
-        run: go install github.com/vladopajic/go-test-coverage/v2@v2.18.3
-
       - name: Enforce 100% coverage (excluding annotated lines)
         run: go-test-coverage --config .testcoverage.yml
 
