@@ -51,28 +51,22 @@ jobs:
       security-events: write
 
   # ---------------------------------------------------------------------------
-  # Dependency audit
+  # Dependency audit (containerised)
   # ---------------------------------------------------------------------------
   dependency-audit:
     name: "ci: dependency-audit"
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/wphillipmoore/dev-go:1.26
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: "1.26"
-
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - name: Mark workspace safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Run govulncheck (fail on any vulnerability)
         run: govulncheck ./...
-
-      - name: Install go-licenses
-        run: go install github.com/google/go-licenses@latest
 
       - name: Run license compliance check
         run: >-
@@ -109,7 +103,7 @@ jobs:
         run: echo "Tag-based release validation not yet implemented for Go modules."
 
   # ---------------------------------------------------------------------------
-  # Unit tests — matrix over Go versions
+  # Unit tests — matrix over Go versions (containerised)
   # ---------------------------------------------------------------------------
   test-and-validate:
     name: "test: unit (${{ matrix.go-version }})"
@@ -118,18 +112,15 @@ jobs:
       fail-fast: false
       matrix:
         go-version: ${{ fromJSON(inputs.go-versions || '["1.25", "1.26"]') }}
+    container:
+      image: ghcr.io/wphillipmoore/dev-go:${{ matrix.go-version }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: ${{ matrix.go-version }}
-
-      - name: Install gocyclo
-        run: go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+      - name: Mark workspace safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Run gocyclo (max complexity 15)
         run: gocyclo -over 15 ./mqrestadmin/
@@ -138,19 +129,17 @@ jobs:
         run: go vet ./...
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v9
+        run: golangci-lint run ./...
 
       - name: Run tests with coverage
         run: go test -race -count=1 -coverprofile=coverage.out ./...
-
-      - name: Install go-test-coverage
-        run: go install github.com/vladopajic/go-test-coverage/v2@latest
 
       - name: Enforce 100% coverage (excluding annotated lines)
         run: go-test-coverage --config .testcoverage.yml
 
   # ---------------------------------------------------------------------------
   # Integration tests — matrix over Go versions with unique MQ ports
+  # (kept on host — needs Docker-in-Docker for MQ containers)
   # ---------------------------------------------------------------------------
   integration-tests:
     name: "test: integration (${{ matrix.go-version }})"
