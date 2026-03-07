@@ -26,8 +26,8 @@ This is a Go port of `pymqrest`, providing a Go wrapper for the IBM MQ administr
 - **Go**: 1.25+ (CI tests 1.25 and 1.26; go.mod declares 1.26)
 - **golangci-lint**: `brew install golangci-lint` (not in `tools.go` per project recommendation)
 - **Dev tools** (pinned in `tools.go`): `go install golang.org/x/vuln/cmd/govulncheck && go install github.com/vladopajic/go-test-coverage/v2 && go install github.com/fzipp/gocyclo/cmd/gocyclo`
-- **Standard tooling**: `cd ../standard-tooling && uv sync && export PATH="../standard-tooling/.venv/bin:../standard-tooling/scripts/bin:$PATH"`
 - **Git hooks**: `git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks` (required before committing)
+- **Standard tooling**: CLI tools (`st-commit`, `st-validate-local`, etc.) are pre-installed in the dev container images
 
 ### Three-Tier CI Model
 
