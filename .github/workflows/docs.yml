@@ -18,6 +18,7 @@ jobs:
   deploy:
     name: "deploy: docs"
     runs-on: ubuntu-latest
+    container: ghcr.io/wphillipmoore/dev-docs:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
