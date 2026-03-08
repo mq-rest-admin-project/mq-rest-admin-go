@@ -5,6 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 <!-- include: docs/standards-and-conventions.md -->
 <!-- include: docs/repository-standards.md -->
 
+## Auto-memory policy
+
+**Do NOT use MEMORY.md.** Never write to MEMORY.md or any file under the
+memory directory. All behavioral rules, conventions, and workflow instructions
+belong in managed, version-controlled documentation (CLAUDE.md, AGENTS.md,
+skills, or docs/). If you want to persist something, tell the human what you
+would save and let them decide where it belongs.
+
 ## Project Overview
 
 This is a Go port of `pymqrest`, providing a Go wrapper for the IBM MQ administrative REST API. The project provides typed Go functions for every MQSC command exposed by the `runCommandJSON` REST endpoint, with automatic attribute name translation between Go `snake_case` and native MQSC parameter names.
