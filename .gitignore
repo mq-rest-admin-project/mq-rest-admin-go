@@ -36,3 +36,4 @@ __pycache__/
 # Editor/IDE
 # .idea/
 # .vscode/
+.worktrees/
