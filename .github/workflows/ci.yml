@@ -66,6 +66,12 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Run govulncheck (fail on any vulnerability)
+        env:
+          # Force auto-download of go1.26.2 for this step only, so the
+          # stdlib scan sees the CVE fixes for GO-2026-4870, GO-2026-4946,
+          # GO-2026-4947. The container ships go1.26.1. Revert this env
+          # override once dev-go:1.26 has been rebuilt upstream.
+          GOTOOLCHAIN: go1.26.2
         run: govulncheck ./...
 
       - name: Run license compliance check

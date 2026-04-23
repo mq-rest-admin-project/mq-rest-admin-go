@@ -2,8 +2,6 @@ module github.com/wphillipmoore/mq-rest-admin-go
 
 go 1.25.0
 
-toolchain go1.26.2
-
 require (
 	github.com/fzipp/gocyclo v0.6.0
 	github.com/vladopajic/go-test-coverage/v2 v2.18.3
