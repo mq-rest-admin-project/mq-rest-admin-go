@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   publish:
-    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@v1.3
+    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@v1.4
     permissions:
       contents: write
       pull-requests: write

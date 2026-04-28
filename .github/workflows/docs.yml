@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 0
 
       - name: Deploy docs
-        uses: wphillipmoore/standard-actions/actions/docs-deploy@v1.3
+        uses: wphillipmoore/standard-actions/actions/docs-deploy@v1.4
         with:
           version-command: grep -oP 'Version\s*=\s*"\K[^"]+' mqrestadmin/version.go | cut -d. -f1,2
           checkout-common: "true"
