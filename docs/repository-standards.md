@@ -3,8 +3,6 @@
 ## Table of Contents
 
 - [Pre-flight checklist](#pre-flight-checklist)
-- [AI co-authors](#ai-co-authors)
-- [Repository profile](#repository-profile)
 - [Local validation](#local-validation)
 - [Tooling requirement](#tooling-requirement)
 - [Merge strategy override](#merge-strategy-override)
@@ -17,21 +15,6 @@
 - If on `develop`, create a short-lived `feature/*` branch or ask for explicit approval to proceed on `develop`.
 - If approval is granted to work on `develop`, call it out in the response and proceed only for that user-approved scope.
 - Enable repository git hooks before committing: `git config core.hooksPath scripts/git-hooks`.
-
-## AI co-authors
-
-- Co-Authored-By: wphillipmoore-codex <255923655+wphillipmoore-codex@users.noreply.github.com>
-- Co-Authored-By: wphillipmoore-claude <255925739+wphillipmoore-claude@users.noreply.github.com>
-
-## Repository profile
-
-- repository_type: library
-- versioning_scheme: library
-- branching_model: library-release
-- release_model: artifact-publishing
-- supported_release_lines: current and previous
-- primary_language: go
-- canonical_local_validation_command: scripts/dev/validate_local.sh
 
 ## Local validation
 
@@ -96,9 +79,8 @@ st-commit \
 - `--scope` (optional): conventional commit scope
 - `--body` (optional): detailed commit body
 
-The script resolves the correct `Co-Authored-By` identity from the
-[AI co-authors](#ai-co-authors) section and the git hooks validate
-the result.
+The script resolves the correct `Co-Authored-By` identity from
+`standard-tooling.toml` and the git hooks validate the result.
 
 ### Submitting PRs
 
