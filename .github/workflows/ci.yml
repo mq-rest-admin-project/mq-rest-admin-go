@@ -108,7 +108,6 @@ jobs:
     uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.5
     with:
       language: go
-      semgrep-language: golang
       run-standards: ${{ inputs.run-release || 'true' }}
       run-security: ${{ inputs.run-security || 'true' }}
     permissions:
