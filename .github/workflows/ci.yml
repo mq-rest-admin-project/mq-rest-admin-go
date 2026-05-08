@@ -21,7 +21,7 @@ on:
           Run security scanner jobs (set to 'false' to skip).
         type: string
         default: "true"
-      run-release-gates:
+      run-release:
         description: >-
           Run release gate checks (set to 'false' to skip).
         type: string
@@ -36,25 +36,20 @@ concurrency:
 
 jobs:
 
-  # ---------------------------------------------------------------------------
-  # Security and standards (shared reusable workflow)
-  # ---------------------------------------------------------------------------
-  security-and-standards:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.4
+  quality:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
     with:
       language: go
-      semgrep-language: golang
-      run-standards: ${{ inputs.run-release-gates || 'true' }}
-      run-security: ${{ inputs.run-security || 'true' }}
-    permissions:
-      contents: read
-      security-events: write
+      versions: '["1.26"]'
 
-  # ---------------------------------------------------------------------------
-  # Dependency audit (containerised)
-  # ---------------------------------------------------------------------------
-  dependency-audit:
-    name: "ci: dependency-audit"
+  test:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-test.yml@v1.5
+    with:
+      language: go
+      versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
+
+  audit:
+    name: "audit / dependencies"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/wphillipmoore/dev-go:1.26
@@ -65,12 +60,8 @@ jobs:
       - name: Mark workspace safe for git
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Run govulncheck (fail on any vulnerability)
+      - name: Run govulncheck
         env:
-          # Force auto-download of go1.26.2 for this step only, so the
-          # stdlib scan sees the CVE fixes for GO-2026-4870, GO-2026-4946,
-          # GO-2026-4947. The container ships go1.26.1. Revert this env
-          # override once dev-go:1.26 has been rebuilt upstream.
           GOTOOLCHAIN: go1.26.2
         run: govulncheck ./...
 
@@ -79,82 +70,13 @@ jobs:
           go-licenses check ./...
           --allowed_licenses=Apache-2.0,BSD-2-Clause,BSD-3-Clause,MIT,ISC,MPL-2.0,GPL-3.0
 
-  # ---------------------------------------------------------------------------
-  # Release gates
-  # ---------------------------------------------------------------------------
-  release-gates:
-    name: "release: gates"
-    if: ${{ inputs.run-release-gates != 'false' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Skip on non-PR events
-        if: github.event_name != 'pull_request'
-        run: echo "Not a pull request; skipping release gates."
-
-      - name: Checkout code
-        if: github.event_name == 'pull_request'
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Version divergence gate (PRs targeting develop)
-        if: github.event_name == 'pull_request' && github.base_ref == 'develop'
-        uses: wphillipmoore/standard-actions/actions/release-gates/version-divergence@v1.4
-        with:
-          head-version-command: grep -oP 'Version\s*=\s*"\K[^"]+' mqrestadmin/version.go
-          main-version-command: git show origin/main:mqrestadmin/version.go | grep -oP 'Version\s*=\s*"\K[^"]+'
-
-      - name: Tag validation placeholder (PRs targeting main)
-        if: github.event_name == 'pull_request' && github.base_ref == 'main'
-        run: echo "Tag-based release validation not yet implemented for Go modules."
-
-  # ---------------------------------------------------------------------------
-  # Unit tests — matrix over Go versions (containerised)
-  # ---------------------------------------------------------------------------
-  test-and-validate:
-    name: "test: unit (${{ matrix.go-version }})"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        go-version: ${{ fromJSON(inputs.go-versions || '["1.25", "1.26"]') }}
-    container:
-      image: ghcr.io/wphillipmoore/dev-go:${{ matrix.go-version }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Mark workspace safe for git
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Run gocyclo (max complexity 15)
-        run: gocyclo -over 15 ./mqrestadmin/
-
-      - name: Run go vet
-        run: go vet ./...
-
-      - name: Run golangci-lint
-        run: golangci-lint run ./...
-
-      - name: Run tests with coverage
-        run: go test -race -count=1 -coverprofile=coverage.out ./...
-
-      - name: Enforce 100% coverage (excluding annotated lines)
-        run: go-test-coverage --config .testcoverage.yml
-
-  # ---------------------------------------------------------------------------
-  # Integration tests — matrix over Go versions with unique MQ ports
-  # (kept on host — needs Docker-in-Docker for MQ containers)
-  # ---------------------------------------------------------------------------
   integration-tests:
-    name: "test: integration (${{ matrix.go-version }})"
+    name: "test / integration / ${{ matrix.go-version }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include: ${{ fromJSON(inputs.integration-matrix || '[{"go-version":"1.25","project-suffix":"1-25","qm1-rest-port":"9465","qm2-rest-port":"9466","qm1-mq-port":"1436","qm2-mq-port":"1437"},{"go-version":"1.26","project-suffix":"1-26","qm1-rest-port":"9467","qm2-rest-port":"9468","qm1-mq-port":"1438","qm2-mq-port":"1439"}]') }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -181,3 +103,20 @@ jobs:
           MQ_REST_ADMIN_RUN_INTEGRATION=1 \
           MQ_SKIP_LIFECYCLE=1 \
           go test -race -count=1 -tags=integration ./...
+
+  security:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.5
+    with:
+      language: go
+      semgrep-language: golang
+      run-standards: ${{ inputs.run-release || 'true' }}
+      run-security: ${{ inputs.run-security || 'true' }}
+    permissions:
+      contents: read
+      security-events: write
+
+  release:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-release.yml@v1.5
+    with:
+      language: go
+      run-release: ${{ inputs.run-release != 'false' }}

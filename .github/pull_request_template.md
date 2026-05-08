@@ -13,7 +13,7 @@
 
 ## Testing
 
-- markdownlint
+- `st-docker-run -- st-validate`
 - `go vet ./...`
 - `go test -race -count=1 ./...`
 

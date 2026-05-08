@@ -9,5 +9,8 @@ primary-language = "go"
 claude = "Co-Authored-By: wphillipmoore-claude <255925739+wphillipmoore-claude@users.noreply.github.com>"
 codex = "Co-Authored-By: wphillipmoore-codex <255923655+wphillipmoore-codex@users.noreply.github.com>"
 
+[markdownlint]
+ignore = ["docs/site/docs"]
+
 [dependencies]
 standard-tooling = "v1.4"
