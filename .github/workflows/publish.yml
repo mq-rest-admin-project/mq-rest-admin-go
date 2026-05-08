@@ -11,14 +11,13 @@ permissions:
 
 jobs:
   publish:
-    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@v1.4
+    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@v1.5
     permissions:
       contents: write
       pull-requests: write
     with:
       ecosystem: go
-      version-command: >-
-        grep -oP 'Version\s*=\s*"\K[^"]+' mqrestadmin/version.go
+      version-command: st-version show
       build-command: >-
         go build ./... && go vet ./... && go test -race -count=1 ./...
       sbom-output-file: "dist/mqrestadmin-$VERSION.cdx.json"
@@ -38,8 +37,7 @@ jobs:
       version-file: mqrestadmin/version.go
       version-regex: '(Version\s*=\s*\").*(\"\s*)'
       version-replacement: '\g<1>{version}\2'
-      develop-version-command: >-
-        grep -oP 'Version\s*=\s*"\K[^"]+'
+      develop-version-command: st-version show
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}

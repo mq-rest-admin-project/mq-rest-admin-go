@@ -21,23 +21,7 @@
 Canonical local validation command:
 
 ```bash
-scripts/dev/validate_local.sh
-```
-
-Individual checks (run by the validation script):
-
-```bash
-go vet ./...                    # Static analysis
-golangci-lint run ./...         # Lint checks
-gocyclo -over 15 ./mqrestadmin/ # Cyclomatic complexity gate
-go test -race -count=1 ./...   # Unit tests with race detection
-govulncheck ./...               # Vulnerability scanning
-```
-
-Integration tests (require MQ environment, not included in validation script):
-
-```bash
-go test -race -count=1 -tags=integration ./...
+st-docker-run -- st-validate
 ```
 
 ## Tooling requirement
@@ -48,7 +32,7 @@ Required for daily workflow:
 - `golangci-lint` (`brew install golangci-lint`)
 - `gocyclo` (`go install github.com/fzipp/gocyclo/cmd/gocyclo@latest`)
 - `govulncheck` (`go install golang.org/x/vuln/cmd/govulncheck@latest`)
-- `markdownlint` (required for docs validation and PR pre-submission)
+- `st-docker-run -- st-validate` (canonical validation)
 
 ## Merge strategy override
 

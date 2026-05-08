@@ -108,29 +108,7 @@ This is a Go port of `pymqrest`, providing a Go wrapper for the IBM MQ administr
 - **golangci-lint**: `brew install golangci-lint` (not in `tools.go` per project recommendation)
 - **Dev tools** (pinned in `tools.go`): `go install golang.org/x/vuln/cmd/govulncheck && go install github.com/vladopajic/go-test-coverage/v2 && go install github.com/fzipp/gocyclo/cmd/gocyclo`
 - **Git hooks**: `git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks` (required before committing)
-- **Standard tooling**: CLI tools (`st-commit`, `st-validate-local`, etc.) are pre-installed in the dev container images
-
-### Two-Tier CI Model
-
-Testing is split across two tiers with increasing scope and cost:
-
-**Tier 1 — Local pre-commit (seconds):** Fast smoke tests in a single
-container. Enforced via the `.githooks` pre-commit gate on every commit.
-No MQ, no matrix.
-
-```bash
-./scripts/dev/test.sh        # go vet + tests in dev-go:1.26
-./scripts/dev/lint.sh        # go vet + golangci-lint + gocyclo in dev-go:1.26
-./scripts/dev/audit.sh       # govulncheck + license check in dev-go:1.26
-```
-
-**Tier 2 — PR CI (~8-10 min):** Triggers on `pull_request`. Full Go
-matrix (1.25, 1.26), all integration tests, security scanners (CodeQL,
-Trivy, Semgrep), standards compliance, and release gates. Workflow:
-`.github/workflows/ci.yml`.
-
-Push-CI was retired once `st-validate-local` reached parity with PR-CI.
-See wphillipmoore/standard-actions#176 for the parity audit and rationale.
+- **Standard tooling**: CLI tools (`st-commit`, `st-validate`, etc.) are pre-installed in the dev container images
 
 ### Build
 
@@ -139,40 +117,19 @@ go build ./...          # Compile all packages
 go vet ./...            # Static analysis
 ```
 
-### Docker-First Testing
-
-All tests can run inside containers — Docker is the only host prerequisite.
-The `dev-go:1.26` image is built from `../standard-tooling/docker/go/`.
-
-```bash
-# Build the dev image (one-time, from standard-tooling)
-cd ../standard-tooling && docker/build.sh
-
-# Run tests in container
-./scripts/dev/test.sh
-
-# Run lint checks in container
-./scripts/dev/lint.sh
-
-# Run security audit in container
-./scripts/dev/audit.sh
-```
-
-Environment overrides:
-
-- `DOCKER_DEV_IMAGE` — override the container image (default: `dev-go:1.26`)
-- `DOCKER_TEST_CMD` — override the test command
-
 ### Validation
 
 ```bash
-st-validate-local   # Canonical validation (runs all checks below)
-go vet ./...                    # Static analysis
-golangci-lint run ./...         # Lint checks
-gocyclo -over 15 ./mqrestadmin/ # Cyclomatic complexity gate
-go test -race -count=1 ./...   # Unit tests with race detection
-govulncheck ./...               # Vulnerability scanning
+st-docker-run -- st-validate   # Canonical validation (runs in dev container)
 ```
+
+### CI
+
+PR CI (`.github/workflows/ci.yml`) uses standard-actions v1.5 reusable
+workflows for quality (lint, typecheck), unit tests (Go 1.25/1.26
+matrix), security (CodeQL, Trivy, Semgrep, standards), and release gates.
+Bespoke jobs handle dependency audit (go-licenses with allowlist and
+GOTOOLCHAIN override) and integration tests (MQ containers).
 
 ### Testing
 
