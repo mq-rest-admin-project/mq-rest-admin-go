@@ -49,28 +49,10 @@ jobs:
       versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
 
   audit:
-    name: "audit / dependencies / ${{ matrix.go-version }}"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        go-version: ${{ fromJSON(inputs.go-versions || '["1.25", "1.26"]') }}
-    container:
-      image: ghcr.io/wphillipmoore/dev-go:${{ matrix.go-version }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Mark workspace safe for git
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Run govulncheck
-        run: govulncheck ./...
-
-      - name: Run license compliance check
-        run: >-
-          go-licenses check ./...
-          --allowed_licenses=Apache-2.0,BSD-2-Clause,BSD-3-Clause,MIT,ISC,MPL-2.0,GPL-3.0
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-audit.yml@v1.5
+    with:
+      language: go
+      versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
 
   integration-tests:
     name: "test / integration / ${{ matrix.go-version }}"

@@ -127,9 +127,8 @@ st-docker-run -- st-validate   # Canonical validation (runs in dev container)
 
 PR CI (`.github/workflows/ci.yml`) uses standard-actions v1.5 reusable
 workflows for quality (lint, typecheck), unit tests (Go 1.25/1.26
-matrix), security (CodeQL, Trivy, Semgrep, standards), and release gates.
-Bespoke jobs handle dependency audit (go-licenses with allowlist and
-GOTOOLCHAIN override) and integration tests (MQ containers).
+matrix), dependency audit, security (CodeQL, Trivy, Semgrep, standards),
+and release gates. A bespoke job handles integration tests (MQ containers).
 
 ### Testing
 
