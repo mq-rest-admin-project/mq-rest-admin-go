@@ -1,3 +1,4 @@
+# https://github.com/wphillipmoore/standard-actions/blob/develop/.github/workflows/README.md
 name: CI
 
 on:
@@ -35,19 +36,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
-  quality:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
-    with:
-      language: go
-      versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
-
-  test:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-test.yml@v1.5
-    with:
-      language: go
-      versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
-
   audit:
     uses: wphillipmoore/standard-actions/.github/workflows/ci-audit.yml@v1.5
     with:
@@ -88,6 +76,12 @@ jobs:
           MQ_SKIP_LIFECYCLE=1 \
           go test -race -count=1 -tags=integration ./...
 
+  quality:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
+    with:
+      language: go
+      versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
+
   security:
     uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.5
     with:
@@ -98,8 +92,14 @@ jobs:
       contents: read
       security-events: write
 
-  release:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-release.yml@v1.5
+  test:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-test.yml@v1.5
+    with:
+      language: go
+      versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
+
+  version:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-version-bump.yml@v1.5
     with:
       language: go
       run-release: ${{ inputs.run-release != 'false' }}
