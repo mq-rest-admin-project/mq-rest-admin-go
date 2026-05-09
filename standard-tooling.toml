@@ -16,5 +16,9 @@ integration-tests = true
 [markdownlint]
 ignore = ["docs/site/docs"]
 
+[publish]
+release = true
+docs = true
+
 [dependencies]
 standard-tooling = "v1.4"
