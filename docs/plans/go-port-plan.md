@@ -52,7 +52,7 @@ providing typed Go functions for every MQSC command exposed by the
 ### Naming
 
 - **Repository**: `mq-rest-admin-go`
-- **Module path**: `github.com/wphillipmoore/mq-rest-admin-go`
+- **Module path**: `github.com/mq-rest-admin-project/mq-rest-admin-go`
 - **Package name**: `mqrest` (short, lowercase, single word per Go conventions)
 
 Follows the family naming pattern established by `mq-rest-admin` (Java), with
@@ -64,7 +64,7 @@ a `-go` suffix to distinguish the language.
 mq-rest-admin-go/
 ├── docs/
 │   ├── decisions/
-│   └── standards-and-conventions.md
+│   └── vergil-tooling.md
 ├── mqrestadmin/                    # Main package
 │   ├── session.go             # Session type, builder/options, core dispatch
 │   ├── session_commands.go    # MQSC command methods (display, define, alter, delete, etc.)
@@ -310,7 +310,7 @@ const (
 ### Phase 1: Foundation
 
 1. **Project scaffolding** -- `go.mod`, directory structure, CLAUDE.md,
-   AGENTS.md, `docs/standards-and-conventions.md`
+   AGENTS.md, `docs/vergil-tooling.md`
 2. **Error types** (`errors.go`) -- all 6 error structs with `Error()` methods
 3. **Transport interface and default implementation** (`transport.go`) --
    `Transport` interface, `HTTPTransport` struct using `net/http`

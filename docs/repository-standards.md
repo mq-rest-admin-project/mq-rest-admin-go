@@ -21,7 +21,7 @@
 Canonical local validation command:
 
 ```bash
-st-docker-run -- st-validate
+vrg-docker-run -- vrg-validate
 ```
 
 ## Tooling requirement
@@ -32,7 +32,7 @@ Required for daily workflow:
 - `golangci-lint` (`brew install golangci-lint`)
 - `gocyclo` (`go install github.com/fzipp/gocyclo/cmd/gocyclo@latest`)
 - `govulncheck` (`go install golang.org/x/vuln/cmd/govulncheck@latest`)
-- `st-docker-run -- st-validate` (canonical validation)
+- `vrg-docker-run -- vrg-validate` (canonical validation)
 
 ## Merge strategy override
 
@@ -51,7 +51,7 @@ submission. Do not construct commit messages or PR bodies manually.
 ### Committing
 
 ```bash
-st-commit \
+vrg-commit \
   --type TYPE --message MESSAGE --agent AGENT \
   [--scope SCOPE] [--body BODY]
 ```
@@ -64,12 +64,12 @@ st-commit \
 - `--body` (optional): detailed commit body
 
 The script resolves the correct `Co-Authored-By` identity from
-`standard-tooling.toml` and the git hooks validate the result.
+`vergil.toml` and the git hooks validate the result.
 
 ### Submitting PRs
 
 ```bash
-st-submit-pr \
+vrg-submit-pr \
   --issue NUMBER --summary TEXT \
   [--linkage KEYWORD] [--title TEXT] \
   [--notes TEXT] [--docs-only] [--dry-run]

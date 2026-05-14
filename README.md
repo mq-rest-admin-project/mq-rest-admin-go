@@ -19,7 +19,7 @@ parameter names, so you work with idiomatic Go identifiers throughout.
 ## Installation
 
 ```bash
-go get github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin
+go get github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin
 ```
 
 Requires Go 1.25+. Zero external runtime dependencies.
@@ -34,7 +34,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+    "github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
 
 func main() {

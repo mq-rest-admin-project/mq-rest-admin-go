@@ -11,7 +11,7 @@ Pass a credential value to `NewSession` as the third argument. Always use TLS
 transit.
 
 ```go
-import "github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+import "github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 
 // mTLS client certificate auth -- strongest; no shared secrets
 session, err := mqrestadmin.NewSession(

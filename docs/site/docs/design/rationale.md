@@ -24,7 +24,7 @@ sub-packages to import. This follows the Go convention of small, focused
 packages and keeps the import path simple:
 
 ```go
-import "github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+import "github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 ```
 
 ### Functional options

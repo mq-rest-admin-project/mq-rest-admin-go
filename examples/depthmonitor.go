@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+	"github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
 
 // QueueDepthInfo holds depth information for a single queue.
