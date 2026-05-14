@@ -1,7 +1,7 @@
 site_name: mqrestadmin (Go)
-site_url: https://wphillipmoore.github.io/mq-rest-admin-go/
+site_url: https://mq-rest-admin-project.github.io/mq-rest-admin-go/
 site_description: Go wrapper for the IBM MQ administrative REST API
-repo_url: https://github.com/wphillipmoore/mq-rest-admin-go
+repo_url: https://github.com/mq-rest-admin-project/mq-rest-admin-go
 repo_name: mq-rest-admin-go
 edit_uri: ""
 

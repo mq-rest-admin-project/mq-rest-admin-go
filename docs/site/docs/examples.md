@@ -2,9 +2,9 @@
 
 Runnable example programs demonstrate common MQ administration tasks using
 `mqrestadmin`. Each example has a core function in the
-[`examples/`](https://github.com/wphillipmoore/mq-rest-admin-go/tree/main/examples)
+[`examples/`](https://github.com/mq-rest-admin-project/mq-rest-admin-go/tree/main/examples)
 package and a standalone `main.go` entry point in
-[`examples/cmd/`](https://github.com/wphillipmoore/mq-rest-admin-go/tree/main/examples/cmd).
+[`examples/cmd/`](https://github.com/mq-rest-admin-project/mq-rest-admin-go/tree/main/examples/cmd).
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ summary for each queue manager.
 go run ./examples/cmd/healthcheck
 ```
 
-See [`examples/healthcheck.go`](https://github.com/wphillipmoore/mq-rest-admin-go/blob/main/examples/healthcheck.go).
+See [`examples/healthcheck.go`](https://github.com/mq-rest-admin-project/mq-rest-admin-go/blob/main/examples/healthcheck.go).
 
 ## Queue depth monitor
 
@@ -50,7 +50,7 @@ approaching capacity, and sorts by depth percentage.
 go run ./examples/cmd/depthmonitor
 ```
 
-See [`examples/depthmonitor.go`](https://github.com/wphillipmoore/mq-rest-admin-go/blob/main/examples/depthmonitor.go).
+See [`examples/depthmonitor.go`](https://github.com/mq-rest-admin-project/mq-rest-admin-go/blob/main/examples/depthmonitor.go).
 
 ## Channel status report
 
@@ -61,7 +61,7 @@ channels that are defined but not running, and shows connection details.
 go run ./examples/cmd/channelstatus
 ```
 
-See [`examples/channelstatus.go`](https://github.com/wphillipmoore/mq-rest-admin-go/blob/main/examples/channelstatus.go).
+See [`examples/channelstatus.go`](https://github.com/mq-rest-admin-project/mq-rest-admin-go/blob/main/examples/channelstatus.go).
 
 ## Environment provisioner
 
@@ -72,7 +72,7 @@ across two queue managers, then verifies connectivity. Includes teardown.
 go run ./examples/cmd/provisionenv
 ```
 
-See [`examples/provisionenv.go`](https://github.com/wphillipmoore/mq-rest-admin-go/blob/main/examples/provisionenv.go).
+See [`examples/provisionenv.go`](https://github.com/mq-rest-admin-project/mq-rest-admin-go/blob/main/examples/provisionenv.go).
 
 ## Dead letter queue inspector
 
@@ -83,7 +83,7 @@ and suggests actions when messages are present.
 go run ./examples/cmd/dlqinspector
 ```
 
-See [`examples/dlqinspector.go`](https://github.com/wphillipmoore/mq-rest-admin-go/blob/main/examples/dlqinspector.go).
+See [`examples/dlqinspector.go`](https://github.com/mq-rest-admin-project/mq-rest-admin-go/blob/main/examples/dlqinspector.go).
 
 ## Queue status and connection handles
 
@@ -95,4 +95,4 @@ structures into uniform flat maps.
 go run ./examples/cmd/queuestatus
 ```
 
-See [`examples/queuestatus.go`](https://github.com/wphillipmoore/mq-rest-admin-go/blob/main/examples/queuestatus.go).
+See [`examples/queuestatus.go`](https://github.com/mq-rest-admin-project/mq-rest-admin-go/blob/main/examples/queuestatus.go).

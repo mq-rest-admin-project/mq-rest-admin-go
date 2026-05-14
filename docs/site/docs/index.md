@@ -1,6 +1,6 @@
 # mqrestadmin
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/wphillipmoore/mq-rest-admin-go)](https://goreportcard.com/report/github.com/wphillipmoore/mq-rest-admin-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mq-rest-admin-project/mq-rest-admin-go)](https://goreportcard.com/report/github.com/mq-rest-admin-project/mq-rest-admin-go)
 
 ## Overview
 
@@ -22,7 +22,7 @@ and error propagation.
 ## Installation
 
 ```bash
-go get github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin
+go get github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin
 ```
 
 ## Status

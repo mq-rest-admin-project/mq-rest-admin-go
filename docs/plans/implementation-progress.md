@@ -145,4 +145,4 @@ See `docs/plans/go-port-plan.md` for full rationale. Summary:
 
 - **Python original**: `../pymqrest`
 - **Java port**: `../mq-rest-admin`
-- **Go standards**: `../standards-and-conventions/docs/development/go/`
+- **Go standards**: `../vergil-tooling/docs/development/go/`

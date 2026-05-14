@@ -17,9 +17,9 @@ mqrestadmin depends on two sibling repositories:
 
 | Repository | Purpose |
 | --- | --- |
-| [mq-rest-admin-go](https://github.com/wphillipmoore/mq-rest-admin-go) | This project |
-| [standards-and-conventions](https://github.com/wphillipmoore/standards-and-conventions) | Canonical project standards (referenced by `AGENTS.md` and git hooks) |
-| [mq-rest-admin-dev-environment](https://github.com/wphillipmoore/mq-rest-admin-dev-environment) | Dockerized MQ test infrastructure (local and CI) |
+| [mq-rest-admin-go](https://github.com/mq-rest-admin-project/mq-rest-admin-go) | This project |
+| [vergil-tooling](https://github.com/vergil-project/vergil-tooling) | Canonical project standards (referenced by `AGENTS.md` and git hooks) |
+| [mq-rest-admin-dev-environment](https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment) | Dockerized MQ test infrastructure (local and CI) |
 
 ## Recommended directory layout
 
@@ -28,15 +28,15 @@ Clone all three repositories as siblings:
 ```text
 ~/dev/
 ├── mq-rest-admin-go/
-├── standards-and-conventions/
+├── vergil-tooling/
 └── mq-rest-admin-dev-environment/
 ```
 
 ```bash
 cd ~/dev
-git clone https://github.com/wphillipmoore/mq-rest-admin-go.git
-git clone https://github.com/wphillipmoore/standards-and-conventions.git
-git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git
+git clone https://github.com/mq-rest-admin-project/mq-rest-admin-go.git
+git clone https://github.com/vergil-project/vergil-tooling.git
+git clone https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment.git
 ```
 
 ## Building
