@@ -1,4 +1,4 @@
-# https://github.com/wphillipmoore/standard-actions/blob/develop/.github/workflows/README.md
+# https://github.com/vergil-project/vergil-actions/blob/develop/.github/workflows/README.md
 name: CI
 
 on:
@@ -37,7 +37,7 @@ concurrency:
 
 jobs:
   audit:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-audit.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-audit.yml@v2.0
     with:
       language: go
       versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
@@ -59,7 +59,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Setup MQ environment
-        uses: wphillipmoore/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
+        uses: mq-rest-admin-project/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
         with:
           project-name: mqrest-go-${{ matrix.project-suffix }}
           qm1-rest-port: ${{ matrix.qm1-rest-port }}
@@ -77,13 +77,13 @@ jobs:
           go test -race -count=1 -tags=integration ./...
 
   quality:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-quality.yml@v2.0
     with:
       language: go
       versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
 
   security:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-security.yml@v2.0
     with:
       language: go
       run-standards: ${{ inputs.run-release != 'false' }}
@@ -93,13 +93,13 @@ jobs:
       security-events: write
 
   test:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-test.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-test.yml@v2.0
     with:
       language: go
       versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
 
   version:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-version-bump.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-version-bump.yml@v2.0
     with:
       language: go
       run-release: ${{ inputs.run-release != 'false' }}

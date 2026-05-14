@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+	"github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
 
 // mockTransport is a test Transport that records calls and returns

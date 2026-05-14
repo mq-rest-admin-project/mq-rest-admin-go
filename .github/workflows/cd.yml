@@ -1,4 +1,4 @@
-# https://github.com/wphillipmoore/standard-actions/blob/develop/.github/workflows/README.md
+# https://github.com/vergil-project/vergil-actions/blob/develop/.github/workflows/README.md
 name: CD
 
 on:
@@ -14,20 +14,22 @@ permissions:
 
 jobs:
   docs:
-    uses: wphillipmoore/standard-actions/.github/workflows/cd-docs.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/cd-docs.yml@v2.0
     with:
       pre-deploy-command: >-
         git clone --depth 1 --branch develop
-        https://github.com/wphillipmoore/mq-rest-admin-common.git
+        https://github.com/mq-rest-admin-project/mq-rest-admin-common.git
         .mq-rest-admin-common
     permissions:
       contents: write
 
   release:
     if: github.ref == 'refs/heads/main'
-    uses: wphillipmoore/standard-actions/.github/workflows/cd-release.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/cd-release.yml@v2.0
     with:
       language: go
       container-tag: "1.26"
       registry-publish: true
-    secrets: inherit
+    secrets:
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}

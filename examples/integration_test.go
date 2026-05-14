@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/wphillipmoore/mq-rest-admin-go/examples"
-	"github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+	"github.com/mq-rest-admin-project/mq-rest-admin-go/examples"
+	"github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
 
 func TestMain(m *testing.M) {

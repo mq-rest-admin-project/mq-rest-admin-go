@@ -8,7 +8,7 @@
 ## Installation
 
 ```bash
-go get github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin
+go get github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin
 ```
 
 ## Creating a session
@@ -23,7 +23,7 @@ import (
     "context"
     "time"
 
-    "github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+    "github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
 
 func main() {

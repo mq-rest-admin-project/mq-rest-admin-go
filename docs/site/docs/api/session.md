@@ -16,7 +16,7 @@ standard Go library conventions.
 Use `NewSession` with functional options:
 
 ```go
-import "github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+import "github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 
 session, err := mqrestadmin.NewSession(
     "https://localhost:9443/ibmmq/rest/v2",

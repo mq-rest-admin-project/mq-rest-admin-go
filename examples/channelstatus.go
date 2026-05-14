@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+	"github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
 
 // ChannelInfo holds combined channel definition and status information.

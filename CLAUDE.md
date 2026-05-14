@@ -2,9 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Standards reference**: <https://github.com/wphillipmoore/standards-and-conventions>
-— active standards documentation lives in the standard-tooling repository under `docs/`.
-Repository profile: `standard-tooling.toml`.
+**Standards reference**: <https://github.com/vergil-project/vergil-tooling>
+— active standards documentation lives in the vergil-tooling repository under `docs/`.
+Repository profile: `vergil.toml`.
 
 ## Memory management
 
@@ -15,9 +15,9 @@ plugin/skill issue) before writing. See that file for the full
 workflow.
 
 Available skills:
-- `/standard-tooling:memory-init` — set up or update the policy header
+- `/vergil:memory-init` — set up or update the policy header
   in a project's `MEMORY.md`.
-- `/standard-tooling:memory-audit` — structured collaborative review
+- `/vergil:memory-audit` — structured collaborative review
   of memory files.
 
 ## Parallel AI agent development
@@ -28,9 +28,9 @@ while preserving shared project memory (which Claude Code derives from the
 session's starting CWD).
 
 **Canonical spec:**
-[`standard-tooling/docs/specs/worktree-convention.md`](https://github.com/wphillipmoore/standard-tooling/blob/develop/docs/specs/worktree-convention.md)
+[`vergil-tooling/docs/specs/worktree-convention.md`](https://github.com/vergil-project/vergil-tooling/blob/develop/docs/specs/worktree-convention.md)
 — full rationale, trust model, failure modes, and memory-path implications.
-The canonical text lives in `standard-tooling`; this section is the local
+The canonical text lives in `vergil-tooling`; this section is the local
 on-ramp.
 
 ### Structure
@@ -94,11 +94,11 @@ This is a Go port of `pymqrest`, providing a Go wrapper for the IBM MQ administr
 
 **Status**: Pre-alpha (initial setup)
 
-**Module path**: `github.com/wphillipmoore/mq-rest-admin-go`
+**Module path**: `github.com/mq-rest-admin-project/mq-rest-admin-go`
 
 **Package name**: `mqrestadmin`
 
-**Canonical Standards**: This repository follows standards at <https://github.com/wphillipmoore/standards-and-conventions> (local path: `../standards-and-conventions` if available)
+**Canonical Standards**: This repository follows standards at <https://github.com/vergil-project/vergil-tooling> (local path: `../vergil-tooling` if available)
 
 ## Development Commands
 
@@ -107,8 +107,8 @@ This is a Go port of `pymqrest`, providing a Go wrapper for the IBM MQ administr
 - **Go**: 1.25+ (CI tests 1.25 and 1.26; go.mod declares 1.26)
 - **golangci-lint**: `brew install golangci-lint` (not in `tools.go` per project recommendation)
 - **Dev tools** (pinned in `tools.go`): `go install golang.org/x/vuln/cmd/govulncheck && go install github.com/vladopajic/go-test-coverage/v2 && go install github.com/fzipp/gocyclo/cmd/gocyclo`
-- **Git hooks**: `git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks` (required before committing)
-- **Standard tooling**: CLI tools (`st-commit`, `st-validate`, etc.) are pre-installed in the dev container images
+- **Git hooks**: `git config core.hooksPath ../vergil-tooling/scripts/lib/git-hooks` (required before committing)
+- **VERGIL CLI tools (`vrg-commit`, `vrg-validate`, etc.) are pre-installed in the dev container images
 
 ### Build
 
@@ -120,7 +120,7 @@ go vet ./...            # Static analysis
 ### Validation
 
 ```bash
-st-docker-run -- st-validate   # Canonical validation (runs in dev container)
+vrg-docker-run -- vrg-validate   # Canonical validation (runs in dev container)
 ```
 
 ### CI
@@ -148,7 +148,7 @@ go tool cover -html=coverage.out                # View coverage in browser
   annotated with `// coverage-ignore -- <reason>` on the **preceding line** (the
   `{` line) and excluded from measurement.
 - **Integration tests**: Require `MQ_REST_ADMIN_RUN_INTEGRATION=1` and a running
-  MQ container. CI uses the `wphillipmoore/mq-rest-admin-dev-environment` action.
+  MQ container. CI uses the `mq-rest-admin-project/mq-rest-admin-dev-environment` action.
   Wrapper scripts in `scripts/dev/mq_*.sh` manage the MQ lifecycle with
   `COMPOSE_PROJECT_NAME=mqrest-go` and Go-specific port allocation
   (REST: 9463/9464, MQ: 1434/1435).
@@ -156,13 +156,13 @@ go tool cover -html=coverage.out                # View coverage in browser
 ### Local MQ Container
 
 The MQ development environment is owned by the
-[mq-rest-admin-dev-environment](https://github.com/wphillipmoore/mq-rest-admin-dev-environment)
+[mq-rest-admin-dev-environment](https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment)
 repository. Clone it as a sibling directory before running lifecycle
 scripts:
 
 ```bash
 # Prerequisite (one-time)
-git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git ../mq-rest-admin-dev-environment
+git clone https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment.git ../mq-rest-admin-dev-environment
 
 # Start the containerized MQ queue managers
 ./scripts/dev/mq_start.sh

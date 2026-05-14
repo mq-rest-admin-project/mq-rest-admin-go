@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wphillipmoore/mq-rest-admin-go/mqrestadmin"
+	"github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
 
 // QueueHandleInfo holds per-handle queue status information.
