@@ -41,7 +41,7 @@ jobs:
     with:
       language: go
       versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
-      container-suffix: go
+      container-suffix: base
       container-tag: 'latest'
 
   integration-tests:
@@ -83,7 +83,7 @@ jobs:
     with:
       language: go
       versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
-      container-suffix: go
+      container-suffix: base
       container-tag: 'latest'
 
   security:
@@ -92,7 +92,7 @@ jobs:
       language: go
       run-standards: ${{ inputs.run-release != 'false' }}
       run-security: ${{ inputs.run-security != 'false' }}
-      container-suffix: go
+      container-suffix: base
       container-tag: 'latest'
     permissions:
       contents: read
@@ -103,7 +103,7 @@ jobs:
     with:
       language: go
       versions: ${{ inputs.go-versions || '["1.25", "1.26"]' }}
-      container-suffix: go
+      container-suffix: base
       container-tag: 'latest'
 
   version:
@@ -111,5 +111,5 @@ jobs:
     with:
       language: go
       run-release: ${{ inputs.run-release != 'false' }}
-      container-suffix: go
+      container-suffix: base
       container-tag: 'latest'
