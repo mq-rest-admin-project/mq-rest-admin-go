@@ -82,7 +82,7 @@ func waitForRESTReady() {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec // integration test
+			TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, InsecureSkipVerify: true}, //nolint:gosec // integration test
 		},
 	}
 	deadline := time.Now().Add(90 * time.Second)
