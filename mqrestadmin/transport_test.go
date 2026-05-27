@@ -88,6 +88,7 @@ func TestBuildClient_NilTLSConfig(t *testing.T) {
 
 func TestBuildClient_WithTLSConfig(t *testing.T) {
 	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
 		ServerName: "test-server",
 	}
 	transport := &HTTPTransport{TLSConfig: tlsConfig}

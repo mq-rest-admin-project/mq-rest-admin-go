@@ -84,7 +84,7 @@ func (transport *HTTPTransport) PostJSON(ctx context.Context, url string,
 func (transport *HTTPTransport) buildClient(timeout time.Duration, verifyTLS bool) *http.Client {
 	tlsConfiguration := transport.TLSConfig
 	if tlsConfiguration == nil {
-		tlsConfiguration = &tls.Config{}
+		tlsConfiguration = &tls.Config{MinVersion: tls.VersionTLS12}
 	} else {
 		tlsConfiguration = tlsConfiguration.Clone()
 	}

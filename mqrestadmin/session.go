@@ -179,6 +179,7 @@ func NewSession(restBaseURL, qmgrName string, credentials Credentials, opts ...O
 				return nil, fmt.Errorf("load client certificate: %w", err)
 			}
 			httpTransport.TLSConfig = &tls.Config{
+				MinVersion:   tls.VersionTLS12,
 				Certificates: []tls.Certificate{*certificate},
 			}
 		}
