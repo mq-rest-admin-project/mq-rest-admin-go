@@ -37,3 +37,6 @@ __pycache__/
 # .idea/
 # .vscode/
 .worktrees/
+
+# Vergil tooling scratch (PR/session working dir)
+.vergil/
