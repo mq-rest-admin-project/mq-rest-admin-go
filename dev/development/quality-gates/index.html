@@ -759,7 +759,7 @@
   <span class="md-ellipsis">
     
   
-    v1.2.1
+    1.2.0
   
 
     
@@ -787,7 +787,7 @@
   <span class="md-ellipsis">
     
   
-    v1.2.0
+    1.2.0
   
 
     
@@ -815,7 +815,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.10
+    1.1.10
   
 
     
@@ -843,7 +843,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.9
+    1.1.9
   
 
     
@@ -871,7 +871,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.8
+    1.1.8
   
 
     
@@ -899,7 +899,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.7
+    1.1.7
   
 
     
@@ -927,7 +927,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.6
+    1.1.6
   
 
     
@@ -955,7 +955,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.5
+    1.1.5
   
 
     
@@ -983,7 +983,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.4
+    1.1.4
   
 
     
@@ -1011,7 +1011,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.3
+    1.1.3
   
 
     
@@ -1039,7 +1039,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.2
+    1.1.2
   
 
     
@@ -1067,7 +1067,7 @@
   <span class="md-ellipsis">
     
   
-    v1.1.1
+    1.1.1
   
 
     
@@ -3152,15 +3152,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#git-hooks" class="md-nav__link">
+  <a href="#claude-code-hook-guard" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Git hooks
+        Claude Code hook guard
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Git hooks">
+    <nav class="md-nav" aria-label="Claude Code hook guard">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3410,15 +3410,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#git-hooks" class="md-nav__link">
+  <a href="#claude-code-hook-guard" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Git hooks
+        Claude Code hook guard
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Git hooks">
+    <nav class="md-nav" aria-label="Claude Code hook guard">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3615,10 +3615,10 @@ Local git hooks catch issues before code leaves the developer's machine,
 and CI pipelines enforce the same standards (plus additional checks) on
 every pull request. Pull requests cannot merge until all required jobs
 pass.</p>
-<h2 id="git-hooks">Git hooks<a class="headerlink" href="#git-hooks" title="Permanent link">&para;</a></h2>
-<p>Git hooks are stored in <code>scripts/git-hooks/</code> and activated with:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>config<span class="w"> </span>core.hooksPath<span class="w"> </span>scripts/git-hooks
-</code></pre></div>
+<h2 id="claude-code-hook-guard">Claude Code hook guard<a class="headerlink" href="#claude-code-hook-guard" title="Permanent link">&para;</a></h2>
+<p>The <code>.claude/hooks/guard.sh</code> PreToolUse hook blocks raw <code>git</code> and
+<code>gh</code> commands in AI agent sessions — all operations must go through
+the <code>vrg-git</code> / <code>vrg-gh</code> wrappers.</p>
 <h3 id="pre-commit">pre-commit<a class="headerlink" href="#pre-commit" title="Permanent link">&para;</a></h3>
 <p>The <code>pre-commit</code> hook runs before each commit and enforces:</p>
 <p><strong>Protected branch blocking</strong> — Commits directly to <code>main</code>, <code>develop</code>,
@@ -3653,7 +3653,7 @@ corresponding naming convention:</p>
 <p>The <code>commit-msg</code> hook runs after the commit message is written and
 validates two things:</p>
 <p><strong>Conventional Commits format</strong> — The subject line must match:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>&lt;type&gt;(optional-scope): &lt;description&gt;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>&lt;type&gt;(optional-scope): &lt;description&gt;
 </code></pre></div>
 <p>Allowed types: <code>feat</code>, <code>fix</code>, <code>docs</code>, <code>style</code>, <code>refactor</code>, <code>test</code>, <code>chore</code>.</p>
 <p><strong>Co-author identity validation</strong> — If the commit includes
@@ -3803,9 +3803,9 @@ deploy the <code>dev</code> version; pushes to <code>main</code> deploy a number
 (read from <code>VERSION</code> or the package metadata) with a <code>latest</code> alias.</p>
 <h2 id="go-specific-validation">Go-specific validation<a class="headerlink" href="#go-specific-validation" title="Permanent link">&para;</a></h2>
 <p>The Go validation pipeline runs as individual commands:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>go<span class="w"> </span>vet<span class="w"> </span>./...
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>golangci-lint<span class="w"> </span>run
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>go<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-race<span class="w"> </span>-count<span class="o">=</span><span class="m">1</span><span class="w"> </span>-coverprofile<span class="o">=</span>coverage.out<span class="w"> </span>./...
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>go<span class="w"> </span>vet<span class="w"> </span>./...
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>golangci-lint<span class="w"> </span>run
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>go<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-race<span class="w"> </span>-count<span class="o">=</span><span class="m">1</span><span class="w"> </span>-coverprofile<span class="o">=</span>coverage.out<span class="w"> </span>./...
 </code></pre></div>
 <p>This covers:</p>
 <ol>
