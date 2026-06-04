@@ -43,7 +43,8 @@ func main() {
         "QM1",
         mqrestadmin.LTPAAuth{Username: "mqadmin", Password: "mqadmin"},
         mqrestadmin.WithTimeout(30*time.Second),
-        mqrestadmin.WithVerifyTLS(false),
+        // TLS is always verified. For a self-signed/dev queue manager, add
+        // mqrestadmin.WithTLSCAFile("/path/to/dev-ca.pem")
     )
     if err != nil {
         panic(err)
@@ -93,7 +94,7 @@ session, err := mqrestadmin.NewSession(
     mqrestadmin.LTPAAuth{Username: "user", Password: "pass"},
     mqrestadmin.WithMapAttributes(true),   // snake_case <-> MQSC (default)
     mqrestadmin.WithMappingStrict(true),    // error on unknown attributes (default)
-    mqrestadmin.WithVerifyTLS(true),        // TLS verification (default)
+    mqrestadmin.WithTLSCAFile("/path/to/ca.pem"), // trust an internal/self-signed CA
     mqrestadmin.WithTimeout(30*time.Second), // HTTP timeout (default)
 )
 ```

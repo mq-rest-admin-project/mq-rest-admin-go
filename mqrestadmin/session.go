@@ -3,9 +3,11 @@ package mqrestadmin
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -28,7 +30,6 @@ type Session struct {
 	credentials   Credentials
 	transport     Transport
 	gatewayQmgr   string
-	verifyTLS     bool
 	timeout       time.Duration
 	mapAttributes bool
 	mappingStrict bool
@@ -65,7 +66,7 @@ type Option func(*sessionConfig)
 type sessionConfig struct {
 	transport            Transport
 	gatewayQmgr          string
-	verifyTLS            bool
+	tlsCAFile            string
 	timeout              time.Duration
 	mapAttributes        bool
 	mappingStrict        bool
@@ -77,7 +78,6 @@ type sessionConfig struct {
 func defaultConfig() sessionConfig {
 	csrfToken := defaultCSRFToken
 	return sessionConfig{
-		verifyTLS:     true,
 		timeout:       defaultTimeout,
 		mapAttributes: true,
 		mappingStrict: true,
@@ -101,11 +101,13 @@ func WithGatewayQmgr(name string) Option {
 	}
 }
 
-// WithVerifyTLS controls TLS certificate verification. Set to false to allow
-// self-signed certificates (useful for development/testing).
-func WithVerifyTLS(verify bool) Option {
+// WithTLSCAFile trusts the PEM CA bundle at the given path for TLS
+// verification, in addition to the system roots. Use this to connect to a
+// server presenting an internal or self-signed CA. TLS certificates are
+// always verified.
+func WithTLSCAFile(path string) Option {
 	return func(config *sessionConfig) {
-		config.verifyTLS = verify
+		config.tlsCAFile = path
 	}
 }
 
@@ -171,19 +173,11 @@ func NewSession(restBaseURL, qmgrName string, credentials Credentials, opts ...O
 	// Default transport
 	transport := config.transport
 	if transport == nil {
-		httpTransport := &HTTPTransport{}
-		// Configure mTLS if using certificate auth
-		if certAuth, isCert := credentials.(CertificateAuth); isCert {
-			certificate, err := certAuth.loadTLSCertificate()
-			if err != nil {
-				return nil, fmt.Errorf("load client certificate: %w", err)
-			}
-			httpTransport.TLSConfig = &tls.Config{
-				MinVersion:   tls.VersionTLS12,
-				Certificates: []tls.Certificate{*certificate},
-			}
+		tlsConfig, err := buildTLSConfig(credentials, config.tlsCAFile)
+		if err != nil {
+			return nil, err
 		}
-		transport = httpTransport
+		transport = &HTTPTransport{TLSConfig: tlsConfig}
 	}
 
 	// Attribute mapper
@@ -206,7 +200,6 @@ func NewSession(restBaseURL, qmgrName string, credentials Credentials, opts ...O
 		credentials:   credentials,
 		transport:     transport,
 		gatewayQmgr:   config.gatewayQmgr,
-		verifyTLS:     config.verifyTLS,
 		timeout:       config.timeout,
 		mapAttributes: config.mapAttributes,
 		mappingStrict: config.mappingStrict,
@@ -223,6 +216,51 @@ func NewSession(restBaseURL, qmgrName string, credentials Credentials, opts ...O
 	}
 
 	return session, nil
+}
+
+// buildTLSConfig assembles the TLS configuration for the default transport,
+// combining an optional mTLS client certificate (from CertificateAuth) with an
+// optional trusted CA bundle. It returns nil when neither applies, in which
+// case the transport verifies against the system trust store. TLS certificates
+// are always verified.
+func buildTLSConfig(credentials Credentials, caFile string) (*tls.Config, error) {
+	var tlsConfig *tls.Config
+	if certAuth, isCert := credentials.(CertificateAuth); isCert {
+		certificate, err := certAuth.loadTLSCertificate()
+		if err != nil {
+			return nil, fmt.Errorf("load client certificate: %w", err)
+		}
+		tlsConfig = &tls.Config{
+			MinVersion:   tls.VersionTLS12,
+			Certificates: []tls.Certificate{*certificate},
+		}
+	}
+
+	if caFile != "" {
+		pool, err := loadCACertPool(caFile)
+		if err != nil {
+			return nil, err
+		}
+		if tlsConfig == nil {
+			tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+		}
+		tlsConfig.RootCAs = pool
+	}
+
+	return tlsConfig, nil
+}
+
+// loadCACertPool reads a PEM CA bundle into a new certificate pool.
+func loadCACertPool(caFile string) (*x509.CertPool, error) {
+	pemData, err := os.ReadFile(caFile)
+	if err != nil {
+		return nil, fmt.Errorf("read CA file %q: %w", caFile, err)
+	}
+	pool := x509.NewCertPool()
+	if !pool.AppendCertsFromPEM(pemData) {
+		return nil, fmt.Errorf("no certificates found in CA file %q", caFile)
+	}
+	return pool, nil
 }
 
 // QmgrName returns the queue manager name for this session.
@@ -317,7 +355,7 @@ func (session *Session) executeAndParseResponse(ctx context.Context, payload map
 	url := session.buildMQSCURL()
 	headers := session.buildHeaders()
 
-	response, err := session.transport.PostJSON(ctx, url, payload, headers, session.timeout, session.verifyTLS)
+	response, err := session.transport.PostJSON(ctx, url, payload, headers, session.timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -453,7 +491,7 @@ func (session *Session) performLTPALogin(auth LTPAAuth) error {
 	}
 
 	response, err := session.transport.PostJSON(
-		context.Background(), loginURL, loginPayload, headers, session.timeout, session.verifyTLS)
+		context.Background(), loginURL, loginPayload, headers, session.timeout)
 	if err != nil {
 		return fmt.Errorf("LTPA login request failed: %w", err)
 	}

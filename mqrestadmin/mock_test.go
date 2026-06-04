@@ -16,11 +16,10 @@ type mockTransport struct {
 }
 
 type mockCall struct {
-	URL       string
-	Payload   map[string]any
-	Headers   map[string]string
-	Timeout   time.Duration
-	VerifyTLS bool
+	URL     string
+	Payload map[string]any
+	Headers map[string]string
+	Timeout time.Duration
 }
 
 type mockResponse struct {
@@ -82,14 +81,13 @@ func (transport *mockTransport) addCommandErrorResponse(completionCode, reasonCo
 }
 
 func (transport *mockTransport) PostJSON(_ context.Context, url string, payload map[string]any,
-	headers map[string]string, timeout time.Duration, verifyTLS bool,
+	headers map[string]string, timeout time.Duration,
 ) (*TransportResponse, error) {
 	transport.calls = append(transport.calls, mockCall{
-		URL:       url,
-		Payload:   payload,
-		Headers:   headers,
-		Timeout:   timeout,
-		VerifyTLS: verifyTLS,
+		URL:     url,
+		Payload: payload,
+		Headers: headers,
+		Timeout: timeout,
 	})
 
 	if transport.callIndex >= len(transport.responses) {
@@ -145,7 +143,6 @@ func newTestSession(transport *mockTransport) *Session {
 		qmgrName:      "QM1",
 		credentials:   BasicAuth{Username: "admin", Password: "admin"},
 		transport:     transport,
-		verifyTLS:     true,
 		timeout:       30 * time.Second,
 		mapAttributes: false,
 		mappingStrict: true,

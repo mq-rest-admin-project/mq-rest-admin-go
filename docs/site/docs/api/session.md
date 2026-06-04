@@ -53,7 +53,7 @@ func NewSession(
 | --- | --- | --- |
 | `WithTransport(Transport)` | `Transport` | Custom transport implementation (default: `HTTPTransport`) |
 | `WithGatewayQmgr(string)` | `string` | Gateway queue manager for remote routing |
-| `WithVerifyTLS(bool)` | `bool` | Verify server TLS certificates (default: `true`) |
+| `WithTLSCAFile(string)` | `string` | Trust a PEM CA bundle for TLS (internal/self-signed CAs); certificates are always verified |
 | `WithTimeout(time.Duration)` | `time.Duration` | HTTP request timeout (default: 30s) |
 | `WithMapAttributes(bool)` | `bool` | Enable/disable attribute mapping (default: `true`) |
 | `WithMappingStrict(bool)` | `bool` | Strict or permissive mapping mode (default: `true`) |
@@ -83,7 +83,7 @@ session, err := mqrestadmin.NewSession(
     mqrestadmin.WithGatewayQmgr("QM1"),
     mqrestadmin.WithMapAttributes(true),
     mqrestadmin.WithMappingStrict(false),
-    mqrestadmin.WithVerifyTLS(true),
+    mqrestadmin.WithTLSCAFile("/path/to/ca.pem"), // trust an internal/self-signed CA
     mqrestadmin.WithTimeout(30*time.Second),
     mqrestadmin.WithMappingOverrides(overrides, mqrestadmin.MappingOverrideMerge),
 )

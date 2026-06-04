@@ -19,7 +19,6 @@ type Transport interface {
         payload   map[string]any,
         headers   map[string]string,
         timeout   time.Duration,
-        verifyTLS bool,
     ) (*TransportResponse, error)
 }
 ```
@@ -31,7 +30,6 @@ type Transport interface {
 | `payload` | `map[string]any` | The `runCommandJSON` request body |
 | `headers` | `map[string]string` | Authentication, CSRF token, and optional gateway headers |
 | `timeout` | `time.Duration` | Per-request timeout duration |
-| `verifyTLS` | `bool` | Whether to verify server certificates |
 
 Returns `*TransportResponse` on success or a `*TransportError` on network
 failures.
@@ -80,7 +78,7 @@ transport := &mqrestadmin.HTTPTransport{
 `HTTPTransport` handles:
 
 - HTTPS connections with configurable `tls.Config`
-- Automatic TLS certificate verification (or disabled via `verifyTLS=false`)
+- Automatic TLS certificate verification (always on; trust internal/self-signed CAs via `RootCAs` / `WithTLSCAFile`)
 - Request timeouts via `time.Duration`
 - JSON serialization/deserialization with `encoding/json`
 - Custom HTTP headers
@@ -117,7 +115,7 @@ type mockTransport struct {
 
 func (m *mockTransport) PostJSON(
     ctx context.Context, url string, payload map[string]any,
-    headers map[string]string, timeout time.Duration, verifyTLS bool,
+    headers map[string]string, timeout time.Duration,
 ) (*mqrestadmin.TransportResponse, error) {
     return m.response, m.err
 }

@@ -1,3 +1,5 @@
+//go:build integration
+
 package examples_test
 
 import (
@@ -7,14 +9,28 @@ import (
 	"testing"
 
 	"github.com/mq-rest-admin-project/mq-rest-admin-go/examples"
+	"github.com/mq-rest-admin-project/mq-rest-admin-go/internal/devtls"
 	"github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
+
+var devCAFile string
 
 func TestMain(m *testing.M) {
 	if os.Getenv("MQ_REST_ADMIN_RUN_INTEGRATION") != "1" {
 		fmt.Println("skipping examples integration tests (MQ_REST_ADMIN_RUN_INTEGRATION != 1)")
 		os.Exit(0)
 	}
+
+	caFile, err := devtls.CAFileFor([]string{
+		envOr("MQ_REST_BASE_URL", "https://localhost:9463/ibmmq/rest/v2"),
+		envOr("MQ_REST_BASE_URL_QM2", "https://localhost:9464/ibmmq/rest/v2"),
+	})
+	if err != nil {
+		fmt.Println("failed to establish dev TLS trust:", err)
+		os.Exit(1)
+	}
+	devCAFile = caFile
+
 	os.Exit(m.Run())
 }
 
@@ -34,7 +50,7 @@ func qm1Session(t *testing.T) *mqrestadmin.Session {
 			Username: envOr("MQ_ADMIN_USER", "mqadmin"),
 			Password: envOr("MQ_ADMIN_PASSWORD", "mqadmin"),
 		},
-		mqrestadmin.WithVerifyTLS(false),
+		mqrestadmin.WithTLSCAFile(devCAFile),
 	)
 	if err != nil {
 		t.Fatalf("create QM1 session: %v", err)
@@ -51,7 +67,7 @@ func qm2Session(t *testing.T) *mqrestadmin.Session {
 			Username: envOr("MQ_ADMIN_USER", "mqadmin"),
 			Password: envOr("MQ_ADMIN_PASSWORD", "mqadmin"),
 		},
-		mqrestadmin.WithVerifyTLS(false),
+		mqrestadmin.WithTLSCAFile(devCAFile),
 	)
 	if err != nil {
 		t.Fatalf("create QM2 session: %v", err)

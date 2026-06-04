@@ -49,7 +49,7 @@ In Go, the transport is defined by the `Transport` interface:
 ```go
 type Transport interface {
     PostJSON(ctx context.Context, url string, payload map[string]any,
-        headers map[string]string, timeout time.Duration, verifyTLS bool,
+        headers map[string]string, timeout time.Duration,
     ) (*TransportResponse, error)
 }
 ```
@@ -64,7 +64,7 @@ type mockTransport struct{}
 
 func (m *mockTransport) PostJSON(ctx context.Context, url string,
     payload map[string]any, headers map[string]string,
-    timeout time.Duration, verifyTLS bool,
+    timeout time.Duration,
 ) (*TransportResponse, error) {
     return &mqrestadmin.TransportResponse{
         StatusCode: 200,

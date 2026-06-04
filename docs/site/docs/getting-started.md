@@ -32,7 +32,7 @@ func main() {
         "QM1",
         mqrestadmin.LTPAAuth{Username: "mqadmin", Password: "mqadmin"},
         mqrestadmin.WithTimeout(30*time.Second),
-        mqrestadmin.WithVerifyTLS(false), // for local development only
+        mqrestadmin.WithTLSCAFile(os.Getenv("MQ_REST_TLS_CA_FILE")), // trust a self-signed/dev CA
     )
     if err != nil {
         panic(err)
@@ -176,7 +176,7 @@ session, err := mqrestadmin.NewSession(
     "QM2",                                     // target queue manager
     mqrestadmin.LTPAAuth{Username: "mqadmin", Password: "mqadmin"},
     mqrestadmin.WithGatewayQmgr("QM1"),        // local gateway queue manager
-    mqrestadmin.WithVerifyTLS(false),
+    mqrestadmin.WithTLSCAFile(os.Getenv("MQ_REST_TLS_CA_FILE")), // trust a self-signed/dev CA
 )
 
 qmgr, _ := session.DisplayQmgr(ctx)

@@ -32,7 +32,7 @@ session, err := mqrestadmin.NewSession(
     "QM2",
     mqrestadmin.LTPAAuth{Username: "mqadmin", Password: "mqadmin"},
     mqrestadmin.WithGatewayQmgr("QM1"),
-    mqrestadmin.WithVerifyTLS(false),
+    mqrestadmin.WithTLSCAFile(os.Getenv("MQ_REST_TLS_CA_FILE")), // trust a self-signed/dev CA
 )
 if err != nil {
     log.Fatal(err)
