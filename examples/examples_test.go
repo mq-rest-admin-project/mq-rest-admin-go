@@ -301,6 +301,34 @@ func TestPrintChannelStatus_Error(t *testing.T) {
 	}
 }
 
+func TestPrintChannelStatus_UndefinedChannel(t *testing.T) {
+	transport := &mockTransport{}
+	// DISPLAY CHANNEL returns only CHAN.A
+	transport.addSuccessResponse(
+		map[string]any{"channel_name": "CHAN.A", "channel_type": "SDR", "connection_name": "host(1414)"},
+	)
+	// DISPLAY CHSTATUS adds a live-but-undefined CHAN.X
+	transport.addSuccessResponse(
+		map[string]any{"channel_name": "CHAN.A", "status": "RUNNING"},
+		map[string]any{"channel_name": "CHAN.X", "status": "RETRYING"},
+	)
+
+	session := newTestSession(t, transport)
+	results, err := PrintChannelStatus(context.Background(), session)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	found := false
+	for _, r := range results {
+		if r.Name == "CHAN.X" && !r.Defined {
+			found = true
+		}
+	}
+	if !found {
+		t.Error("expected undefined CHAN.X in results")
+	}
+}
+
 // ---------------------------------------------------------------------------
 // depthmonitor.go
 // ---------------------------------------------------------------------------
@@ -962,6 +990,46 @@ func TestPrintProvision_WithFailures(t *testing.T) {
 
 	if len(result.ObjectsFailed) != 1 {
 		t.Errorf("ObjectsFailed = %d, want 1", len(result.ObjectsFailed))
+	}
+}
+
+func TestPrintProvision_TeardownFailures(t *testing.T) {
+	t1 := &mockTransport{}
+	t2 := &mockTransport{}
+
+	// Provision: all 5 defines succeed, then a verify listing the created queues.
+	for range 5 {
+		t1.addSuccessResponse()
+	}
+	t1.addSuccessResponse(
+		map[string]any{"queue_name": "PROV.QM1.LOCAL"},
+		map[string]any{"queue_name": "PROV.QM1.TO.QM2.XMITQ"},
+		map[string]any{"queue_name": "PROV.REMOTE.TO.QM2"},
+	)
+	for range 5 {
+		t2.addSuccessResponse()
+	}
+	t2.addSuccessResponse(
+		map[string]any{"queue_name": "PROV.QM2.LOCAL"},
+		map[string]any{"queue_name": "PROV.QM2.TO.QM1.XMITQ"},
+		map[string]any{"queue_name": "PROV.REMOTE.TO.QM1"},
+	)
+
+	// Teardown: one delete on QM1 fails -> Teardown returns failures.
+	t1.addCommandErrorResponse(2, 2085)
+	for range 4 {
+		t1.addSuccessResponse()
+	}
+	for range 5 {
+		t2.addSuccessResponse()
+	}
+
+	qm1 := newTestSession(t, t1)
+	qm2 := newTestSession(t, t2)
+	result := PrintProvision(context.Background(), qm1, qm2)
+
+	if len(result.ObjectsCreated) == 0 {
+		t.Error("expected objects to be created")
 	}
 }
 

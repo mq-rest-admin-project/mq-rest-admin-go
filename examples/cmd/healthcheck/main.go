@@ -39,7 +39,7 @@ func mustSession(baseURL, qmgrName string) *mqrestadmin.Session {
 			Username: envOr("MQ_ADMIN_USER", "mqadmin"),
 			Password: envOr("MQ_ADMIN_PASSWORD", "mqadmin"),
 		},
-		mqrestadmin.WithVerifyTLS(false),
+		mqrestadmin.WithTLSCAFile(os.Getenv("MQ_REST_TLS_CA_FILE")),
 	)
 	if err != nil {
 		log.Fatal(err)

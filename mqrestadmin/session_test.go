@@ -36,7 +36,6 @@ func TestNewSession_WithOptions(t *testing.T) {
 		BasicAuth{Username: "admin", Password: "pass"},
 		WithTransport(transport),
 		WithGatewayQmgr("GATEWAY"),
-		WithVerifyTLS(false),
 		WithTimeout(60*time.Second),
 		WithMapAttributes(false),
 		WithMappingStrict(false),
@@ -46,9 +45,6 @@ func TestNewSession_WithOptions(t *testing.T) {
 	}
 	if session.GatewayQmgr() != "GATEWAY" {
 		t.Errorf("GatewayQmgr() = %q, want %q", session.GatewayQmgr(), "GATEWAY")
-	}
-	if session.verifyTLS {
-		t.Error("verifyTLS should be false")
 	}
 	if session.timeout != 60*time.Second {
 		t.Errorf("timeout = %v, want 60s", session.timeout)

@@ -3,6 +3,7 @@ package mqrestadmin
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"io"
@@ -31,8 +32,10 @@ func TestHTTPTransport_PostJSON_Success(t *testing.T) {
 	}))
 	defer server.Close()
 
+	certPool := x509.NewCertPool()
+	certPool.AddCert(server.Certificate())
 	transport := &HTTPTransport{
-		TLSConfig: server.TLS.Clone(),
+		TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: certPool},
 	}
 
 	response, err := transport.PostJSON(
@@ -41,7 +44,6 @@ func TestHTTPTransport_PostJSON_Success(t *testing.T) {
 		map[string]any{"key": "value"},
 		map[string]string{"X-Custom": "header-value"},
 		30*time.Second,
-		false,
 	)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -66,7 +68,6 @@ func TestHTTPTransport_PostJSON_NetworkError(t *testing.T) {
 		map[string]any{"key": "value"},
 		nil,
 		1*time.Second,
-		false,
 	)
 	if err == nil {
 		t.Fatal("expected error for unreachable host")
@@ -80,7 +81,7 @@ func TestHTTPTransport_PostJSON_NetworkError(t *testing.T) {
 
 func TestBuildClient_NilTLSConfig(t *testing.T) {
 	transport := &HTTPTransport{TLSConfig: nil}
-	client := transport.buildClient(10*time.Second, true)
+	client := transport.buildClient(10 * time.Second)
 	if client.Timeout != 10*time.Second {
 		t.Errorf("Timeout = %v, want 10s", client.Timeout)
 	}
@@ -92,14 +93,14 @@ func TestBuildClient_WithTLSConfig(t *testing.T) {
 		ServerName: "test-server",
 	}
 	transport := &HTTPTransport{TLSConfig: tlsConfig}
-	client := transport.buildClient(10*time.Second, true)
+	client := transport.buildClient(10 * time.Second)
 
 	httpTransport := client.Transport.(*http.Transport)
 	if httpTransport.TLSClientConfig.ServerName != "test-server" {
 		t.Error("expected TLSConfig to be cloned with ServerName")
 	}
 	if httpTransport.TLSClientConfig.InsecureSkipVerify {
-		t.Error("expected InsecureSkipVerify = false when verifyTLS = true")
+		t.Error("expected InsecureSkipVerify = false (TLS is always verified)")
 	}
 }
 
@@ -112,7 +113,6 @@ func TestHTTPTransport_PostJSON_InvalidURL(t *testing.T) {
 		map[string]any{"key": "value"},
 		nil,
 		1*time.Second,
-		false,
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid URL")
@@ -124,12 +124,61 @@ func TestHTTPTransport_PostJSON_InvalidURL(t *testing.T) {
 	}
 }
 
-func TestBuildClient_VerifyTLSFalse(t *testing.T) {
-	transport := &HTTPTransport{}
-	client := transport.buildClient(10*time.Second, false)
+func TestNewSession_WithTLSCAFile(t *testing.T) {
+	certPEM, _ := generateSelfSignedCert(t)
+	caFile := writeTempFile(t, "ca.pem", certPEM)
 
-	httpTransport := client.Transport.(*http.Transport)
-	if !httpTransport.TLSClientConfig.InsecureSkipVerify {
-		t.Error("expected InsecureSkipVerify = true when verifyTLS = false")
+	session, err := NewSession("https://localhost:9443/x", "QM1",
+		BasicAuth{Username: "u", Password: "p"}, WithTLSCAFile(caFile))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	httpTransport, ok := session.transport.(*HTTPTransport)
+	if !ok {
+		t.Fatalf("expected *HTTPTransport, got %T", session.transport)
+	}
+	if httpTransport.TLSConfig == nil || httpTransport.TLSConfig.RootCAs == nil {
+		t.Fatal("expected TLSConfig with RootCAs set")
 	}
 }
+
+func TestNewSession_WithTLSCAFile_MissingFile(t *testing.T) {
+	_, err := NewSession("https://localhost:9443/x", "QM1",
+		BasicAuth{Username: "u", Password: "p"}, WithTLSCAFile("/nonexistent/ca.pem"))
+	if err == nil {
+		t.Fatal("expected error for missing CA file")
+	}
+}
+
+func TestNewSession_WithTLSCAFile_InvalidPEM(t *testing.T) {
+	caFile := writeTempFile(t, "bad.pem", []byte("not a certificate"))
+	_, err := NewSession("https://localhost:9443/x", "QM1",
+		BasicAuth{Username: "u", Password: "p"}, WithTLSCAFile(caFile))
+	if err == nil {
+		t.Fatal("expected error for invalid PEM CA file")
+	}
+}
+
+func TestNewSession_CertificateAuthWithTLSCAFile(t *testing.T) {
+	certPEM, keyPEM := generateSelfSignedCert(t)
+	certFile := writeTempFile(t, "cert.pem", certPEM)
+	keyFile := writeTempFile(t, "key.pem", keyPEM)
+	caFile := writeTempFile(t, "ca.pem", certPEM)
+
+	session, err := NewSession("https://localhost:9443/x", "QM1",
+		CertificateAuth{CertPath: certFile, KeyPath: keyFile}, WithTLSCAFile(caFile))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	httpTransport, ok := session.transport.(*HTTPTransport)
+	if !ok {
+		t.Fatalf("expected *HTTPTransport, got %T", session.transport)
+	}
+	if len(httpTransport.TLSConfig.Certificates) == 0 {
+		t.Error("expected client certificate to be set")
+	}
+	if httpTransport.TLSConfig.RootCAs == nil {
+		t.Error("expected RootCAs to be set")
+	}
+}
+

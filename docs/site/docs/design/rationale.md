@@ -37,7 +37,7 @@ session, err := mqrestadmin.NewSession(
     "https://localhost:9443/ibmmq/rest/v2",
     "QM1",
     mqrestadmin.LTPAAuth{Username: "mqadmin", Password: "mqadmin"},
-    mqrestadmin.WithVerifyTLS(false),
+    mqrestadmin.WithTLSCAFile(os.Getenv("MQ_REST_TLS_CA_FILE")), // trust a self-signed/dev CA
     mqrestadmin.WithTimeout(30 * time.Second),
 )
 ```

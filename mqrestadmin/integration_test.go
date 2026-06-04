@@ -5,6 +5,7 @@ package mqrestadmin_test
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,8 +15,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mq-rest-admin-project/mq-rest-admin-go/internal/devtls"
 	"github.com/mq-rest-admin-project/mq-rest-admin-go/mqrestadmin"
 )
+
+// devCAFile is the CA bundle trusting the dev queue managers, established by
+// waitForRESTReady once the REST endpoint is up.
+var devCAFile string
 
 // ---------------------------------------------------------------------------
 // TestMain — lifecycle management and runtime gate
@@ -79,30 +85,47 @@ func findRepoRoot() string {
 
 func waitForRESTReady() {
 	cfg := loadIntegrationConfig()
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, InsecureSkipVerify: true}, //nolint:gosec // integration test
-		},
-	}
-	deadline := time.Now().Add(90 * time.Second)
 	url := cfg.restBaseURL + "/admin/qmgr"
+	deadline := time.Now().Add(90 * time.Second)
 
 	for time.Now().Before(deadline) {
-		req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
-		req.SetBasicAuth(cfg.adminUser, cfg.adminPassword)
-		req.Header.Set("ibm-mq-rest-csrf-token", "blank")
-		resp, err := client.Do(req)
-		if err == nil {
-			resp.Body.Close()
-			if resp.StatusCode == http.StatusOK {
-				return
-			}
+		// Cert extraction + a verified request only succeed once MQ is up, so
+		// this is both the readiness gate and proof that verified TLS works.
+		caFile, err := devtls.CAFileFor([]string{cfg.restBaseURL, cfg.restBaseURLQM2})
+		if err == nil && restReady(url, caFile, cfg.adminUser, cfg.adminPassword) {
+			devCAFile = caFile
+			return
 		}
 		time.Sleep(2 * time.Second)
 	}
 	fmt.Fprintln(os.Stderr, "MQ REST endpoint not ready after 90s")
 	os.Exit(1)
+}
+
+func restReady(url, caFile, user, pass string) bool {
+	pemData, err := os.ReadFile(caFile)
+	if err != nil {
+		return false
+	}
+	pool := x509.NewCertPool()
+	if !pool.AppendCertsFromPEM(pemData) {
+		return false
+	}
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: pool},
+		},
+	}
+	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+	req.SetBasicAuth(user, pass)
+	req.Header.Set("ibm-mq-rest-csrf-token", "blank")
+	resp, err := client.Do(req)
+	if err != nil {
+		return false
+	}
+	defer func() { _ = resp.Body.Close() }()
+	return resp.StatusCode == http.StatusOK
 }
 
 // ---------------------------------------------------------------------------
@@ -155,7 +178,6 @@ type integrationConfig struct {
 	adminPassword  string
 	qmgrName       string
 	qmgrNameQM2    string
-	verifyTLS      bool
 }
 
 func loadIntegrationConfig() integrationConfig {
@@ -166,7 +188,6 @@ func loadIntegrationConfig() integrationConfig {
 		adminPassword:  envOrDefault("MQ_ADMIN_PASSWORD", "mqadmin"),
 		qmgrName:       envOrDefault("MQ_QMGR_NAME", "QM1"),
 		qmgrNameQM2:    envOrDefault("MQ_QMGR_NAME_QM2", "QM2"),
-		verifyTLS:      parseBool(envOrDefault("MQ_REST_VERIFY_TLS", "false")),
 	}
 }
 
@@ -196,7 +217,7 @@ func buildSession(t *testing.T, cfg integrationConfig) *mqrestadmin.Session {
 		cfg.restBaseURL,
 		cfg.qmgrName,
 		mqrestadmin.BasicAuth{Username: cfg.adminUser, Password: cfg.adminPassword},
-		mqrestadmin.WithVerifyTLS(cfg.verifyTLS),
+		mqrestadmin.WithTLSCAFile(devCAFile),
 		mqrestadmin.WithMappingStrict(false),
 	)
 	if err != nil {
@@ -212,7 +233,7 @@ func buildGatewaySession(t *testing.T, cfg integrationConfig, targetQmgr, gatewa
 		targetQmgr,
 		mqrestadmin.BasicAuth{Username: cfg.adminUser, Password: cfg.adminPassword},
 		mqrestadmin.WithGatewayQmgr(gatewayQmgr),
-		mqrestadmin.WithVerifyTLS(cfg.verifyTLS),
+		mqrestadmin.WithTLSCAFile(devCAFile),
 		mqrestadmin.WithMappingStrict(false),
 	)
 	if err != nil {
@@ -987,7 +1008,7 @@ func TestLTPAAuthDisplayQmgr(t *testing.T) {
 		cfg.restBaseURL,
 		cfg.qmgrName,
 		mqrestadmin.LTPAAuth{Username: cfg.adminUser, Password: cfg.adminPassword},
-		mqrestadmin.WithVerifyTLS(cfg.verifyTLS),
+		mqrestadmin.WithTLSCAFile(devCAFile),
 	)
 	if err != nil {
 		t.Fatalf("LTPA session creation failed: %v", err)

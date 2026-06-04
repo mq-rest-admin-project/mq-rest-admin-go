@@ -17,7 +17,7 @@ import (
 type Transport interface {
 	// PostJSON sends a JSON POST request and returns the response.
 	PostJSON(ctx context.Context, url string, payload map[string]any,
-		headers map[string]string, timeout time.Duration, verifyTLS bool,
+		headers map[string]string, timeout time.Duration,
 	) (*TransportResponse, error)
 }
 
@@ -38,7 +38,6 @@ type HTTPTransport struct {
 // PostJSON sends a JSON POST request using net/http.
 func (transport *HTTPTransport) PostJSON(ctx context.Context, url string,
 	payload map[string]any, headers map[string]string, timeout time.Duration,
-	verifyTLS bool,
 ) (*TransportResponse, error) {
 	body, err := json.Marshal(payload)
 	if err != nil { // coverage-ignore -- json.Marshal on map[string]any cannot fail
@@ -54,7 +53,7 @@ func (transport *HTTPTransport) PostJSON(ctx context.Context, url string,
 		request.Header.Set(key, value)
 	}
 
-	client := transport.buildClient(timeout, verifyTLS)
+	client := transport.buildClient(timeout)
 
 	response, err := client.Do(request)
 	if err != nil {
@@ -81,16 +80,12 @@ func (transport *HTTPTransport) PostJSON(ctx context.Context, url string,
 	}, nil
 }
 
-func (transport *HTTPTransport) buildClient(timeout time.Duration, verifyTLS bool) *http.Client {
+func (transport *HTTPTransport) buildClient(timeout time.Duration) *http.Client {
 	tlsConfiguration := transport.TLSConfig
 	if tlsConfiguration == nil {
 		tlsConfiguration = &tls.Config{MinVersion: tls.VersionTLS12}
 	} else {
 		tlsConfiguration = tlsConfiguration.Clone()
-	}
-
-	if !verifyTLS {
-		tlsConfiguration.InsecureSkipVerify = true
 	}
 
 	return &http.Client{
