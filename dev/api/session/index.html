@@ -3548,9 +3548,9 @@ configuration are returned at construction time.</p>
 <td>Gateway queue manager for remote routing</td>
 </tr>
 <tr>
-<td><code>WithVerifyTLS(bool)</code></td>
-<td><code>bool</code></td>
-<td>Verify server TLS certificates (default: <code>true</code>)</td>
+<td><code>WithTLSCAFile(string)</code></td>
+<td><code>string</code></td>
+<td>Trust a PEM CA bundle for TLS (internal/self-signed CAs); certificates are always verified</td>
 </tr>
 <tr>
 <td><code>WithTimeout(time.Duration)</code></td>
@@ -3597,7 +3597,7 @@ configuration are returned at construction time.</p>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nx">mqrestadmin</span><span class="p">.</span><span class="nx">WithGatewayQmgr</span><span class="p">(</span><span class="s">&quot;QM1&quot;</span><span class="p">),</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nx">mqrestadmin</span><span class="p">.</span><span class="nx">WithMapAttributes</span><span class="p">(</span><span class="kc">true</span><span class="p">),</span>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nx">mqrestadmin</span><span class="p">.</span><span class="nx">WithMappingStrict</span><span class="p">(</span><span class="kc">false</span><span class="p">),</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nx">mqrestadmin</span><span class="p">.</span><span class="nx">WithVerifyTLS</span><span class="p">(</span><span class="kc">true</span><span class="p">),</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nx">mqrestadmin</span><span class="p">.</span><span class="nx">WithTLSCAFile</span><span class="p">(</span><span class="s">&quot;/path/to/ca.pem&quot;</span><span class="p">),</span><span class="w"> </span><span class="c1">// trust an internal/self-signed CA</span>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="nx">mqrestadmin</span><span class="p">.</span><span class="nx">WithTimeout</span><span class="p">(</span><span class="mi">30</span><span class="o">*</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">),</span>
 <a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="nx">mqrestadmin</span><span class="p">.</span><span class="nx">WithMappingOverrides</span><span class="p">(</span><span class="nx">overrides</span><span class="p">,</span><span class="w"> </span><span class="nx">mqrestadmin</span><span class="p">.</span><span class="nx">MappingOverrideMerge</span><span class="p">),</span>
 <a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="p">)</span>
