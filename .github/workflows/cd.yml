@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   docs:
-    uses: vergil-project/vergil-actions/.github/workflows/cd-docs.yml@v2.0
+    uses: vergil-project/vergil-actions/.github/workflows/cd-docs.yml@v2.1
     with:
       pre-deploy-command: >-
         git clone --depth 1 --branch develop
@@ -25,7 +25,7 @@ jobs:
 
   release:
     if: github.ref == 'refs/heads/main'
-    uses: vergil-project/vergil-actions/.github/workflows/cd-release.yml@v2.0
+    uses: vergil-project/vergil-actions/.github/workflows/cd-release.yml@v2.1
     with:
       language: go
       container-tag: "1.26"
