@@ -181,4 +181,4 @@ govulncheck ./...               # vulnerability scan
 
 ## License
 
-GPL-3.0-or-later. See `LICENSE`.
+MIT. See `LICENSE`.
