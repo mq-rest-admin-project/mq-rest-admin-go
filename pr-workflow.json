@@ -1,0 +1,20 @@
+{
+  "schema_version": 2,
+  "issue": "324",
+  "branch": "feature/324-ci-sync",
+  "base": "origin/develop",
+  "status": "ready",
+  "created_at": "2026-09-02T18:12:58Z",
+  "updated_at": "2026-09-02T18:12:58Z",
+  "git": {
+    "base_sha": "4a08bbc38ff735ad29fb3d70f1e21b4b1c06d057",
+    "head_sha": "9f7d0227276fcab388ee52574d54b64edf6af50e"
+  },
+  "pr_metadata": {
+    "title": "refactor(ci): drop hardcoded matrix inputs from ci.yml",
+    "summary": "Remove the go-versions workflow_call input and the versions: override from every reusable-workflow call so the CI matrix resolves from vergil.toml via vergil-actions@v2.1.",
+    "notes": "Fleet completion for epic #338 Task 14 (#876); cross-org, by hand per vergil-tooling#3015. NO secrets.",
+    "linkage": "Ref"
+  },
+  "submitted": null
+}
